@@ -119,7 +119,7 @@ Google的所有站点都已经全面启用了HTTPS，根据Google自己的说法
 <p>目前大多数最新的浏览器都支持SPDY协议，包括IE11、Chrome、Firefox。服务器方面，apache有mod_spdy，nginx的较新版本内置了对SPDY的支持，只需编译时加上<code>--with-http_spdy_module</code>选项即可。</p>
 <p>我使用的版本是nginx 1.62，Ubuntu 14.04的更新源中的nginx版本较低，无法通过简单的配置启用SPDY，所以我加入了nginx的ppa源：<code>add-apt-repository ppa:nginx/stable</code>，这样再安装nginx就是1.62版本了，配置nginx，将<code>listen 443 ssl</code>修改为<code>listen 443 ssl spdy</code>即可，非常简单。</p>
 <p>使用Chrome可以查看SPDY会话，方法是浏览器中输入<code>chrome://net-internals#spdy</code>。当存在SPDY会话时，会如下图所示：</p>
-<p><img src=https://blog.hljin.net/img/in-post/spdy.png alt="Chrome SPDY"></p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643913767/posts/spdy_ol6jej.png alt="Chrome SPDY"></p>
 <p>实际使用下来的感受还是不错的，相比原来使用HTTP时应该相差不多，海外服务器总会或多或少地丢包，TCP重传机制限制了SPDY的速度，不过还是在可接受的范围内。</p>
 <p>使用HTTPS之后出现的另外一个问题就是页面上会存在请求其他域的HTTP连接，像MathJax、多说评论这些都是外链的，一旦存在这种HTTP连接，浏览器就会告警，Chrome上的绿色小锁上也会出现一个黄色惊叹号，让人很不舒服。我排查了之后发现，MathJax的CDN支持HTTPS，多说评论的主框架也支持HTTPS，但多说的头像和表情总是走HTTP，稍微了搜索了一下没有找到很好的解决方案，我又有强迫症，看不得这些警告信息，加上博客流量几乎为0，没人评论，干脆就把多说给禁了。</p>
 <p>总感觉用别人的模板做的博客怪怪的，自己没法完全控制，想改些东西也不方便，所以等我什么时候下定决心了还是得自己写个，感觉工作量不小。</p>

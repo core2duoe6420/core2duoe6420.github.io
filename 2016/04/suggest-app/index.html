@@ -119,7 +119,7 @@
 <p>WebDAV是NAS自带的功能，可供远程主机访问NAS里的文件。其实这种功能FTP也可以做到，奈何iOS上的工具都不支持FTPS（FTP over SSL），只支持SFTP，但SFTP跟FTP其实是两种东西，NAS上开启SFTP也要求开启SSH，我不想平时都开着SSH，也不想让FTP在互联网上明文传输，所以只能放弃FTP。最后选用WebDAV是因为它既被iOS上的绝大多数应用支持，也能用HTTPS安全传输。如果说BTSync用于电脑与NAS之间的同步，WebDAV则是用于移动设备与NAS之间的同步。例如，我用GoodReader在iPad上看一篇论文，期间做了一些标记，之后我用GoodReader的同步功能与NAS进行同步，然后再在手机上同步一下，修改过的论文就传过来了，另一方面，电脑上存储的文件也会通过BTSync同步过来。</p>
 <h4 id=container-station>Container Station</h4>
 <p>Container Station是QNAP对Docker这样的容器技术的一个包装。最开始我用的是Virutalization Station，也就是虚拟机，但是NAS性能一般，虚拟机速度较慢，而且虚拟机的管理成本高众所周知。后来发现了Container Station之后我花了一番精力把虚拟机上的所有功能都转移到了Container Station上。现在容器上主要跑2个功能：nginx反向代理，以及squid HTTP代理。nginx反向代理是因为NAS上有些应用不支持HTTPS（比如transmission和BTSync的Web控制页面），我现在完全不能容忍HTTP明文传输，必须加密，所以就用nginx在外面套一层HTTPS。squid实际上是一个HTTP缓冲服务器，但我是拿它当代理来用，因为实验室网络太渣，但连我家里的网速度还不错，所以我现在平时在实验室就用家里的HTTP代理服务器上网，还有一个好处，就是我路由器上刷的梅林固件自带了Shadowsocks，可以透明翻墙，所以用了squid就可以直接翻墙了。</p>
-<p><img src=https://blog.hljin.net/img/in-post/container-station.png alt="Container Station"></p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643913767/posts/container-station_bqpnki.jpg alt="Container Station"></p>
 <p>为了能在控制台上直接看到squid的日志，我当初还费了一番精力。借助Docker的Volume功能，可以把配置文件放在BTSync的同步文件夹中，这样如果我在实验室想改squid的配置，只需在本地修改完配置文件，等一会儿BTSync就会把修改同步到NAS，最后在Container Station上重启一下容器就行。为了安全起见，我还做了两个版本的squid，一个是digest用户验证，一个是basic验证，后者只有在用一些不支持digest验证的软件时才会启动。</p>
 <h2 id=ios上的效率app>iOS上的效率App</h2>
 <p>前面说过，我最近才换了iPhone，所以对iOS上的App热情比较高。之前虽然也有iPad，但是毕竟需求不一样，动力也不一样，这里先介绍几个我最近发现的，以后有好的再说。</p>
@@ -133,7 +133,7 @@
 <p>这个App现在是我在逛知乎找App的时候知道的。一开始是想尝试一下著名的GTD工具omniFocus，奈何太贵，而且看评论似乎不适合我这样的散人。于是试了下Wunderlist，感觉还不错，就当做是简单的清单，把要看的电影、书、论文都列上去，看完一个划掉一个，特别爽。</p>
 <h4 id=ithoughts>iThoughts</h4>
 <p>国飞顾在这周的Meeting上叫我做总结，于是我就想到了之前看到的思维导图，用来做MTD的总结再好不过。知乎大神上推荐各种思维导图App：iThoughts、MindNoe、SimpleMind、MindManager等等，随手试了下iThoughts，感觉完全能满足我的需求，就不试别的了。iThoughts无论在哪个平台上都要花钱，而且不便宜，我现在Mac上用的是盗版的iThoughts（不要骂我），iOS上用的是iThoughts2go，这是iThoughts的免费版，相比完全版，只在节点数量上做了限制，不能超过20个，其它功能一样，所以我在Mac上先编辑完，再同步到手机和iPad上。我把iThoughts放到了AppZapp的提醒列表上，一等它降价就买（最低降到过12元啊……）。晒一张用iThoughts做的MTD总结图。</p>
-<p><img src=https://blog.hljin.net/img/in-post/MTD.png alt=MTD></p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643913768/posts/MTD_mxdvva.png alt=MTD></p>
 <h2 id=最后关于博客>最后，关于博客</h2>
 <p>一年前我就说想给博客换肤了，结果直到今天才搞定，非常惭愧。新的系统基于Jekyll，用的是Hux的模板，在此表示感谢。评论系统换成了Disquz，我自己添加了按需加载MathJax的功能。新的模板比原来那个是好看多了。我没有把博客放在Github上然后通过CNAME指向它，因为这样没法用HTTPS，前面说过，我现在对非加密的HTTP简直深恶痛绝。现在这样也只是多了一步写完文章去VPS上手工运行Jekyll Build一下的操作，也不碍事。</p>
 <p>本来这篇文章是想写些关于最近的事。最近实在是压力太大，就像我跟朋友说的那样：“论文发不出毕不了业，工作找不到，妹子也找不到，打个LOL我还定位到了青铜，实在是life loser。”后来想想还是算了，就在此一笔带过，不再散发负能量了。生活总得继续，只要不死，总有希望。</p>
