@@ -26,7 +26,7 @@ WebDAV是NAS自带的功能，可供远程主机访问NAS里的文件。其实�
 
 Container Station是QNAP对Docker这样的容器技术的一个包装。最开始我用的是Virutalization Station，也就是虚拟机，但是NAS性能一般，虚拟机速度较慢，而且虚拟机的管理成本高众所周知。后来发现了Container Station之后我花了一番精力把虚拟机上的所有功能都转移到了Container Station上。现在容器上主要跑2个功能：nginx反向代理，以及squid HTTP代理。nginx反向代理是因为NAS上有些应用不支持HTTPS（比如transmission和BTSync的Web控制页面），我现在完全不能容忍HTTP明文传输，必须加密，所以就用nginx在外面套一层HTTPS。squid实际上是一个HTTP缓冲服务器，但我是拿它当代理来用，因为实验室网络太渣，但连我家里的网速度还不错，所以我现在平时在实验室就用家里的HTTP代理服务器上网，还有一个好处，就是我路由器上刷的梅林固件自带了Shadowsocks，可以透明翻墙，所以用了squid就可以直接翻墙了。
 
-![Container Station](/img/in-post/container-station.png)
+![Container Station](https://res.cloudinary.com/core2duoe6420/image/upload/v1643913767/posts/container-station_bqpnki.jpg)
 
 为了能在控制台上直接看到squid的日志，我当初还费了一番精力。借助Docker的Volume功能，可以把配置文件放在BTSync的同步文件夹中，这样如果我在实验室想改squid的配置，只需在本地修改完配置文件，等一会儿BTSync就会把修改同步到NAS，最后在Container Station上重启一下容器就行。为了安全起见，我还做了两个版本的squid，一个是digest用户验证，一个是basic验证，后者只有在用一些不支持digest验证的软件时才会启动。
 
@@ -54,7 +54,7 @@ AppZapp的功能很简单，就是App降价提醒，再也不会错过限免App�
 
 国飞顾在这周的Meeting上叫我做总结，于是我就想到了之前看到的思维导图，用来做MTD的总结再好不过。知乎大神上推荐各种思维导图App：iThoughts、MindNoe、SimpleMind、MindManager等等，随手试了下iThoughts，感觉完全能满足我的需求，就不试别的了。iThoughts无论在哪个平台上都要花钱，而且不便宜，我现在Mac上用的是盗版的iThoughts（不要骂我），iOS上用的是iThoughts2go，这是iThoughts的免费版，相比完全版，只在节点数量上做了限制，不能超过20个，其它功能一样，所以我在Mac上先编辑完，再同步到手机和iPad上。我把iThoughts放到了AppZapp的提醒列表上，一等它降价就买（最低降到过12元啊……）。晒一张用iThoughts做的MTD总结图。
 
-![MTD](/img/in-post/MTD.png)
+![MTD](https://res.cloudinary.com/core2duoe6420/image/upload/v1643913768/posts/MTD_mxdvva.png)
 
 ## 最后，关于博客
 

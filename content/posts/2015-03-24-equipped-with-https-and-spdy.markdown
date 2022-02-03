@@ -18,7 +18,7 @@ Google开发的SPDY协议（已成为HTTP/2.0的模板）可以很好的克服HT
 
 使用Chrome可以查看SPDY会话，方法是浏览器中输入`chrome://net-internals#spdy`。当存在SPDY会话时，会如下图所示：
 
-![Chrome SPDY](/img/in-post/spdy.png)
+![Chrome SPDY](https://res.cloudinary.com/core2duoe6420/image/upload/v1643913767/posts/spdy_ol6jej.png)
 
 实际使用下来的感受还是不错的，相比原来使用HTTP时应该相差不多，海外服务器总会或多或少地丢包，TCP重传机制限制了SPDY的速度，不过还是在可接受的范围内。
 
