@@ -1,0 +1,303 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"记一次Docker DNS排障","datePublished":"2020-02-04T00:00:00Z","dateModified":"2020-02-04T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2020\/02\/docker-dns-troubleshooting\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。">
+<meta property="og:description" content="今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次Docker DNS排障">
+<meta name=twitter:title content="记一次Docker DNS排障">
+<meta property="og:url" content="https://blog.hljin.net/2020/02/docker-dns-troubleshooting/">
+<meta property="twitter:url" content="https://blog.hljin.net/2020/02/docker-dns-troubleshooting/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。">
+<meta name=twitter:description content="今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2020-02-04T00:00:00">
+<meta property="article:modified_time" content="2020-02-04T00:00:00">
+<meta property="article:tag" content="docker">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<title>记一次Docker DNS排障</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2020/02/docker-dns-troubleshooting/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div id=main data-behavior=4 class=hasCoverMetaIn>
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+记一次Docker DNS排障
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2020-02-04T00:00:00Z>
+二月 4, 2020
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。</p>
+<h2 id=第一阶段>第一阶段</h2>
+<p>查DNS问题第一步肯定是看<code>/etc/resolv.conf</code>，OK，瞅一瞅</p>
+<pre tabindex=0><code>search localdomain
+nameserver 127.0.0.11
+options ndots:0
+</code></pre><p>咦，怎么DNS是奇怪的<code>127.0.0.11</code>？OK，这也不是什么大问题，看看有没有进程监听了53端口，因为容器里没有所需要的工具，DNS又坏了用不了包管理工具，只能另谋他法：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ nsenter -t <span style=color:#66d9ef>$(</span>docker inspect -f <span style=color:#f92672>{{</span>.State.Pid<span style=color:#f92672>}}</span> b884630283ce<span style=color:#66d9ef>)</span> -n netstat -anu
+Active Internet connections <span style=color:#f92672>(</span>servers and established<span style=color:#f92672>)</span>
+Proto Recv-Q Send-Q Local Address           Foreign Address         State      
+udp        <span style=color:#ae81ff>0</span>      <span style=color:#ae81ff>0</span> 127.0.0.11:41287        0.0.0.0:*       
+</code></pre></div><p>咦，没有进程在监听<code>53</code>端口，只有一个奇怪的<code>41287</code>，也不知道是谁监听的。</p>
+<p>有点奇怪，顺手看一看iptables</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ nsenter -t <span style=color:#66d9ef>$(</span>docker inspect -f <span style=color:#f92672>{{</span>.State.Pid<span style=color:#f92672>}}</span> b884630283ce<span style=color:#66d9ef>)</span> -n iptables -t nat -L -n -v
+<span style=color:#f92672>(</span>...省略无关内容）
+Chain DOCKER_OUTPUT <span style=color:#f92672>(</span><span style=color:#ae81ff>1</span> references<span style=color:#f92672>)</span>
+ pkts bytes target     prot opt in     out     source               destination         
+    <span style=color:#ae81ff>0</span>     <span style=color:#ae81ff>0</span> DNAT       tcp  --  *      *       0.0.0.0/0            127.0.0.11           tcp dpt:53 to:127.0.0.11:37711
+   <span style=color:#ae81ff>29</span>  <span style=color:#ae81ff>1884</span> DNAT       udp  --  *      *       0.0.0.0/0            127.0.0.11           udp dpt:53 to:127.0.0.11:41287
+</code></pre></div><p>出现了这个奇怪的<code>41287</code>端口，这样就能解释<code>netstat</code>的输出内容了，整个解析过程到此是：</p>
+<ol>
+<li>进程向<code>127.0.0.11:53</code>发出DNS请求</li>
+<li><code>iptables</code>将发送到<code>127.0.0.11:53</code>的数据包NAT到<code>127.0.0.11:41287</code></li>
+</ol>
+<p>那么问题来了，谁在监听<code>41287</code>端口？显然不可能是容器内的进程啊。祭出<code>lsof</code>大法：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash>$ nsenter -t <span style=color:#66d9ef>$(</span>docker inspect -f <span style=color:#f92672>{{</span>.State.Pid<span style=color:#f92672>}}</span> b884630283ce<span style=color:#66d9ef>)</span> -n lsof -i :41287
+COMMAND  PID USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+dockerd <span style=color:#ae81ff>7041</span> root   29u  IPv4 <span style=color:#ae81ff>123505</span>      0t0  UDP 127.0.0.11:41287 
+</code></pre></div><p>出现了！居然是<code>dockerd</code>在监听这个端口。一个进程还能在监听在别的network namespace里？查资料后发现还真可以，通过<code>setns</code>系统调用可以进入其他<code>network namespace</code>，原来容器的DNS请求是这样的。</p>
+<h2 id=第二阶段>第二阶段</h2>
+<p>同事有点急，想赶紧先弄出个可以运行的容器让他测试，OK，那就先把<code>/etc/resolv.conf</code>改成和宿主机一样的DNS，结果发现还是不行，一番排查后发现是宿主机的iptables设置把包给REJECT了，改一改iptables，给UDP 53放行，问题解决。但是这是应急措施，下次重新启动容器难道再做一遍？况且公司的Linux机器装了Chef，iptables的设置过一段时间就被重置了。这样不解决根本问题。</p>
+<p>这里先说明下，我们遇到问题的机器部署了Single node Openshift。按照第一阶段所描述的，我设想的整个DNS请求链路应该是：</p>
+<ol>
+<li>进程向<code>127.0.0.11:53</code>发出DNS请求</li>
+<li><code>iptables</code>将发送到<code>127.0.0.11:53</code>的数据包NAT到<code>127.0.0.11:41287</code>，也就是<code>dockerd</code>进程</li>
+<li>（我YY的）<code>dockerd</code>将DNS请求转发到宿主机设置的DNS服务器上，并接受结果</li>
+<li>（我YY的）<code>dockerd</code>再将结果返回到<code>127.0.0.11:41287</code></li>
+<li>（我YY的）<code>iptables</code>再将<code>127.0.0.11:41287</code>重写回<code>127.0.0.11:53</code>，进程接收到DNS响应，请求完毕</li>
+</ol>
+<p>在这个链路里，1 2 4 5都不太会出问题，整个过程中也不会有防火墙介入，因为第4步就跟宿主机普通的DNS请求没什么两样，而宿主机的DNS显然是正常的。</p>
+<p>那么就开始怀疑是不是Docker有bug？Google大法走起，找到了不少帖子：</p>
+<ul>
+<li><a href=https://github.com/docker/for-linux/issues/179>https://github.com/docker/for-linux/issues/179</a></li>
+<li><a href=https://github.com/google/gvisor/issues/115>https://github.com/google/gvisor/issues/115</a></li>
+</ul>
+<p>似乎遇到类似问题的人挺多的？有可能还不是Docker的bug是Docker compose的bug？</p>
+<p>这时同事又跟我说他之前的一台机器是正常的，我一开始我还不相信，因为用的都是同一个版本的Docker。后来我登上去看了一下，发现还真的是好的。那么就不是Docker的bug咯？不过好的机器没有装Openshift，于是怀疑是不是Openshift改了Docker的网络配置，开始疯狂找各种
+<code>/etc/sysconfig/docker</code>，<code>DOCKER_OPTS</code>，<code>/etc/docker/docker.json</code>各种配置，一无所获。</p>
+<h2 id=第三阶段>第三阶段</h2>
+<p>这时候就很绝望了，完全找不到问题的原因。我开始想有没有办法可以看到<code>dockerd</code>的全部流量，来看看它到底有没有收到DNS请求。问题是据我所知，Linux下也没有很好的工具可以看到一个进程的网络流量，唯一的办法大概是用<code>strace</code>看所有的系统调用，不过输出会包含很多无用信息，排查需要很大的耐心。死马当活马医，试试：</p>
+<pre tabindex=0><code>$ strace -p 7041 -f -s 10000
+</code></pre><p>然后在容器里发起一个DNS请求，<code>strace</code>输出了一堆内容，不过还算能接受，仔细看了一下发现了非常关键的信息！</p>
+<pre tabindex=0><code>(...省略无关内容）
+[pid  7055] setns(38, CLONE_NEWNET) = 0
+[pid  7055] socket(AF_INET, SOCK_DGRAM|SOCK_CLOEXEC|SOCK_NONBLOCK, IPPROTO_IP) = 39
+[pid  7055] setsockopt(39, SOL_SOCKET, SO_BROADCAST, [1], 4) = 0
+[pid  7055] connect(39, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr(&quot;192.168.29.2&quot;)}, 16) = 0
+[pid  7055] getsockname(39, {sa_family=AF_INET, sin_port=htons(50886), sin_addr=inet_addr(&quot;172.18.0.2&quot;)}, [112-&gt;16]) = 0
+[pid  7055] getpeername(39, {sa_family=AF_INET, sin_port=htons(53), sin_addr=inet_addr(&quot;192.168.29.2&quot;)}, [112-&gt;16]) = 0
+[pid  7055] setns(10, CLONE_NEWNET)     = 0
+[pid  7055] write(39, &quot;w\364\1\0\0\1\0\0\0\0\0\0\00278\003143\003241\003199\7in-addr\4arpa\0\0\f\0\1&quot;, 45) = 45
+(...省略无关内容）
+</code></pre><p>😱😱😱😱😱😱😱😱😱😱😱😱</p>
+<p>这跟我之前想的第3步完全不一样！根据这段系统调用，真正的过程是这样的：</p>
+<ol>
+<li>进程向<code>127.0.0.11:53</code>发出DNS请求</li>
+<li><code>iptables</code>将发送到<code>127.0.0.11:53</code>的数据包NAT到<code>127.0.0.11:41287</code>，也就是<code>dockerd</code>进程</li>
+<li><code>dockerd</code>通过<code>setns</code>系统调用进入容器的network namespace，然后再向真正的DNS服务器发出请求，由于请求是从容器的network namespace发出的，请求包的IP地址是容器的IP地址</li>
+<li><code>dockerd</code>收到DNS响应，将结果写入<code>127.0.0.11:41287</code></li>
+<li><code>iptables</code>再将<code>127.0.0.11:41287</code>重写回<code>127.0.0.11:53</code>，进程接收到DNS响应，请求完毕</li>
+</ol>
+<p>为什么这里的第3步很关键呢，因为按照我之前想的，DNS请求由宿主机发出，不会有防火墙问题，但是通过容器的网络发出就不一样了，会被防火墙拦截，还记得第二阶段里我为了给同事一个快速的解决方案修改了iptables给UDP 53放行吗，一模一样的问题！</p>
+<p>之后用Wireshark和tcpdump抓包证实了第3步中的DNS请求确实是从容器网卡发出的。</p>
+<p>找到root cause后解决这个问题也不难，修改iptables就行，不过因为公司里Chef的关系，修改iptables无法持久化，为了根本性的解决问题，还是只能在Docker compose里指定一个别的DNS来解决了（恰好就是之前那两个github帖子里的解决方案）。</p>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-footer-tags>
+<span class="text-color-light text-small">标签</span><br>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/docker/>docker</a>
+</div>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2016/05/memory-model/ data-tooltip="What the HELL is MEMORY MODEL" aria-label="上一篇: What the HELL is MEMORY MODEL">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2016/05/memory-model/ data-tooltip="What the HELL is MEMORY MODEL" aria-label="上一篇: What the HELL is MEMORY MODEL">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>
