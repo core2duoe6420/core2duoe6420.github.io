@@ -1,0 +1,344 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"autotools折腾记","datePublished":"2014-10-10T00:00:00Z","dateModified":"2014-10-10T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2014\/10\/autotools-play\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。">
+<meta property="og:description" content="又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="autotools折腾记">
+<meta name=twitter:title content="autotools折腾记">
+<meta property="og:url" content="https://blog.hljin.net/2014/10/autotools-play/">
+<meta property="twitter:url" content="https://blog.hljin.net/2014/10/autotools-play/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。">
+<meta name=twitter:description content="又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2014-10-10T00:00:00">
+<meta property="article:modified_time" content="2014-10-10T00:00:00">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<title>autotools折腾记</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2014/10/autotools-play/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div id=main data-behavior=4 class=hasCoverMetaIn>
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+autotools折腾记
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2014-10-10T00:00:00Z>
+十月 10, 2014
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>又到了痛并快乐着的折腾时间，这次折腾的对象是autotools。话说很早以前我非常崇拜各种开源代码中的configure和makefile，当初傻傻地以为这都是做项目的人自己写出来的，对开源社区里的人各种膜拜啊，尼玛我看都看不懂不要说写了。后来才知道有autoconf这么个玩意可以自动生成这些脚本，自己当然也要写，但是没有那么夸张了。</p>
+<p>但是这玩意学习成本真心不低啊，首先是中文资料少，我英语废看英文文档累得慌，再加上GNU的手册是字典式的不是教学式的，在零基础的情况下基本上是看不懂的。加上当时没什么动力，所以就没有研究下去了。</p>
+<h2 id=需求来了>需求来了</h2>
+<p>现在动力来了。老师前阵子跟我说现在手上的这个项目，我负责的部分代码要上交，反而是师兄那块技术性更强功能更核心的部分是作为演示的。要上交嘛，就要弄得好看点，正式点。于是我就想了，怎么个正式法？原来那种自己手写的挫的要死的makefile一看就很low，必须要文件夹下一大堆<code>configue.ac Makefile.am Makefile.in</code>之类高大上的文件，加上<code>./configure && make && make install</code>三步编译才能算得上正式嘛。所以就开始折腾autotools，本着需求第一的原则，搞这个东西我是不求甚解的，真的要完全搞明白，真的太复杂了，只能要用的时候找找资料，学一点，慢慢积累。所以我也真心佩服那些沉得下心，把这些东西都能吃透，样样都精通的大神。</p>
+<p>OK，废话不多说，先介绍下需求和大致的环境。</p>
+<ul>
+<li>代码用到了两个库，<code>libpcap</code>和<code>libdnet</code>，我向<code>libdnet</code>库中添加了一个函数以适应程序要求，所以configure的时候要能检查这个两个库以及新函数是否存在，不存在要报错。</li>
+<li>代码里用到了DEBUG宏，以DEBUG的值作为调试等级，configure同样要有配置调试级别的选项。</li>
+<li>因为种种原因，我自己实现了一个哈希表，但也将<code>glib</code>中的<code>GHashTable</code>适配到了代码里，通过一个宏作为开关，configure的时候要能正确处理宏的定义。</li>
+</ul>
+<p>就这三条，其实很简单，autotools的宏已经覆盖了这些功能。程序的目录结构如下：</p>
+<pre><code>--root              根目录
+  |--include        头文件.h
+  |--src            代码.c
+</code></pre>
+<h2 id=autotools工具和文件>autotools工具和文件</h2>
+<p>这里的autotools其实指代了一系列工具，要使用autotools得先理清这些工具和它们生成的文件之间的关系。</p>
+<ul>
+<li><code>autoconf</code>：通过<code>configure.ac</code>生成<code>configure</code>，<code>configure.ac</code>是整个流程中最重要的文件。</li>
+<li><code>autoheader</code>：通过<code>configure.ac</code>生成<code>config.h.in</code>，<code>config.h.in</code>是<code>config.h</code>的模板文件，<code>config.h</code>中包含了整个程序用到的宏定义。</li>
+<li><code>autoscan</code>：扫描源文件进行一些通用的移植配置和宏定义。</li>
+<li><code>autoreconf</code>：以正确的顺序自动运行各种工具，包括<code>autoconf</code>、<code>autoheader</code>、<code>automake</code>。</li>
+<li><code>automake</code>：通过<code>configure.ac</code>和<code>Makefile.in</code>生成<code>Makefile</code>。</li>
+</ul>
+<p>还有一些工具更加底层，像这种简单的程序用不到，简单介绍下：</p>
+<ul>
+<li><code>autom4te</code>：是整个autotools工具链的核心，autoconf本质上是M4宏，<code>autom4te</code>则是宏处理器。大致上可以理解为类似于C语言编译前的预处理阶段。</li>
+<li><code>aclocal</code>：会生成<code>aclocal.m4</code>，包含各种自定义的宏。</li>
+</ul>
+<p>实际上，由于我的需求足够简单，在编写完必须的<code>configure.ac</code>、<code>Makefile.am</code>、<code>src/Makefile.am</code>后，只需要执行以下一条命令，就可以生成所有需要的文件了：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>autoreconf --install
+</code></pre></div><p>这就把我从这些复杂的工具中解放了出来，可以专注于核心文件<code>configure.ac</code>的编写。</p>
+<h2 id=编写configureac文件>编写configure.ac文件</h2>
+<p><code>configure.ac</code>由一系列的宏组成，经过<code>autoconf</code>扩展。这些宏的名字都有约定俗成的规范，比如<code>AC_</code>开头的表明是<code>autoconf</code>宏，主要用于生成<code>configure</code>文件，<code>AM_</code>开头的表明是<code>automake</code>宏，主要在配合<code>Makefile.am</code>生成<code>Makefile.in</code>时有效。这里我只介绍会用到的宏。宏里作为参数的部分会用<code>[]</code>括起来，这是为了保护参数字符串不被宏处理器继续展开，是M4宏的特性，这里不多做介绍了。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_INIT<span style=color:#f92672>([</span>convertor<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>0.1<span style=color:#f92672>])</span>
+</code></pre></div><p>初始化<code>autoconf</code>，参数是软件名字和版本号，还有一个参数是用于汇报bug的Email地址，我没有提供。这里提供的信息会被写入到<code>config.h.in</code>中的<code>PACKAGE_xxx</code>宏中。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AM_INIT_AUTOMAKE<span style=color:#f92672>([</span>foreign<span style=color:#f92672>])</span>
+</code></pre></div><p>这句用于初始化<code>automake</code>，<code>autoconf</code>本身是可以单独使用的，但要生成<code>Makefile</code>必须要配合<code>automake</code>。这里需要说明的是网上的很多资料里这个宏的参数有三个，与之前的<code>AC_INIT</code>参数相同，这是过期的版本，新版本已经不适用了。传入<code>foreign</code>的意思是启用foreign模式，工作在GNU模式下的<code>automake</code>会要求诸如<code>NEWS</code>、<code>README</code>、<code>ChangeLog</code>这些文件，我没有写这些文件，所以要使用foreign模式取消检查。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_CONFIG_SRCDIR<span style=color:#f92672>([</span>src/ip.c<span style=color:#f92672>])</span>
+</code></pre></div><p>这个宏用于检查<code>configure</code>所在的位置是否正确，方法就是随便拿一个源文件来测试。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_PROG_CC
+</code></pre></div><p>这个宏用于检查gcc程序，<code>AC_PROG_xxx</code>宏用于检查相应的工具是否存在并且工具正常。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_CHECK_LIB<span style=color:#f92672>([</span>dnet<span style=color:#f92672>]</span>, <span style=color:#f92672>[</span>eth_send_iovec<span style=color:#f92672>]</span>, <span style=color:#f92672>[]</span>, <span style=color:#f92672>[</span>AC_MSG_ERROR<span style=color:#f92672>([</span>libdnet not found or patched.<span style=color:#f92672>])])</span>
+AC_CHECK_LIB<span style=color:#f92672>([</span>pcap<span style=color:#f92672>]</span>, <span style=color:#f92672>[</span>pcap_open_live<span style=color:#f92672>]</span>, <span style=color:#f92672>[]</span>, <span style=color:#f92672>[</span>AC_MSG_ERROR<span style=color:#f92672>([</span>libpcap not found.<span style=color:#f92672>])])</span>
+</code></pre></div><p><code>AC_CHECK_LIB</code>宏用于检查程序依赖的库是否存在，方法是检查库中的一个函数能否通过编译，函数名由第二个参数提供，第三个参数是检查成功时执行的代码，最后一个参数是检查失败时执行的代码。这里检查失败时调用<code>AC_MSG_ERROR</code>宏，也就是直接报错退出，相应的还有<code>AC_MSG_WARN</code>宏，只警告但会继续运行。由于使用一个函数名来检查库是否存在，所以我顺水推舟把我在<code>libdnet</code>中新加的函数作为参数提供了，直接就能满足第一个需求。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_ARG_ENABLE<span style=color:#f92672>([</span>debug<span style=color:#f92672>]</span>,
+    <span style=color:#f92672>[</span>AS_HELP_STRING<span style=color:#f92672>([</span>--enable-debug<span style=color:#f92672>[=</span>level<span style=color:#f92672>]]</span>,<span style=color:#f92672>[</span>运行时打印调试信息（默认关闭）<span style=color:#f92672>])]</span>,
+    <span style=color:#f92672>[</span>
+        <span style=color:#66d9ef>if</span> test <span style=color:#e6db74>&#34;x</span>$enableval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;xyes&#34;</span>; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>DEBUG<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>2<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --enable-debug<span style=color:#f92672>])</span>
+        <span style=color:#66d9ef>elif</span> test <span style=color:#e6db74>&#34;x</span>$enableval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;x0&#34;</span> ; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>DEBUG<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>0<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --enable-debug<span style=color:#f92672>])</span>
+        <span style=color:#66d9ef>elif</span> test <span style=color:#e6db74>&#34;x</span>$enableval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;x1&#34;</span> ; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>DEBUG<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>1<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --enable-debug<span style=color:#f92672>])</span>
+        <span style=color:#66d9ef>elif</span> test <span style=color:#e6db74>&#34;x</span>$enableval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;x2&#34;</span> ; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>DEBUG<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>2<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --enable-debug<span style=color:#f92672>])</span>
+        <span style=color:#66d9ef>elif</span> test <span style=color:#e6db74>&#34;x</span>$enableval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;x3&#34;</span> ; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>DEBUG<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>3<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --enable-debug<span style=color:#f92672>])</span>
+        <span style=color:#66d9ef>else</span>
+            echo <span style=color:#e6db74>&#34;Error! Unknown DEBUG level&#34;</span>
+            exit -1
+        <span style=color:#66d9ef>fi</span>
+    <span style=color:#f92672>]</span>,
+    <span style=color:#f92672>[]</span>
+<span style=color:#f92672>)</span>
+</code></pre></div><p>这一段为第二个需求服务。<code>AC_ARG_ENABLE</code>宏定义的项可以在运行<code>./configure</code>时加上<code>--enable-xxx[=value]</code>指定，共有四个参数，第一个是项的名字，第二个是帮助信息，可以通过<code>./configure --help</code>查看，第三个是配置时设置了该项时运行的脚本，第四个是没有设置该项时运行的脚本。需要注意的是无论是用<code>--enable-xxx</code>还是相应的<code>--disable-xxx</code>都会运行第三个选项的脚本，区别只是<code>$enableval</code>为<code>yes</code>和<code>no</code>，当然如果用<code>=val</code>设置了值，<code>$enableval</code>就会设为<code>val</code>。最后是<code>AC_DEFINE</code>宏，这个宏会将指定的值写入到<code>config.h.in</code>中，对应的格式是：<code>AC_DEFINE([name],[value],[note])</code>会转化为：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=color:#75715e>/* note */</span>
+<span style=color:#75715e>#define name value
+</span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_ARG_WITH<span style=color:#f92672>([</span>glib<span style=color:#f92672>]</span>,
+    <span style=color:#f92672>[</span>AS_HELP_STRING<span style=color:#f92672>([</span>--with-glib<span style=color:#f92672>]</span>, <span style=color:#f92672>[</span>使用glib中的HashTable（默认关闭）<span style=color:#f92672>])]</span>,
+    <span style=color:#f92672>[</span>  
+        <span style=color:#66d9ef>if</span> test <span style=color:#e6db74>&#34;x</span>$withval<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;xyes&#34;</span>; <span style=color:#66d9ef>then</span>
+            AC_DEFINE<span style=color:#f92672>([</span>_USING_GLIB_HASHTABLE<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>1<span style=color:#f92672>]</span>,<span style=color:#f92672>[</span>Define <span style=color:#66d9ef>if</span> --with-glib<span style=color:#f92672>])</span>
+            PKG_CHECK_MODULES<span style=color:#f92672>([</span>GLIB<span style=color:#f92672>]</span>, <span style=color:#f92672>[</span>glib-2.0<span style=color:#f92672>])</span>
+            with_glib<span style=color:#f92672>=</span><span style=color:#e6db74>&#34;yes&#34;</span>
+        <span style=color:#66d9ef>fi</span>
+    <span style=color:#f92672>]</span>,
+    <span style=color:#f92672>[]</span>
+<span style=color:#f92672>)</span>
+AM_CONDITIONAL<span style=color:#f92672>([</span>USE_GLIB<span style=color:#f92672>]</span>, <span style=color:#f92672>[</span>test <span style=color:#e6db74>&#34;x</span>$with_glib<span style=color:#e6db74>&#34;</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&#34;xyes&#34;</span><span style=color:#f92672>])</span>
+</code></pre></div><p>这一段为第三个需求服务。<code>AC_ARG_WITH</code>的功能和<code>AC_ARG_ENABLE</code>很像，是由<code>--with-xxx</code>指定的。参数功能也是一样。<code>PKG_CHECK_MODULES</code>宏用于调用<code>pkg-config</code>获取库的编译和链接选项，根据参数，执行的功能大致相当于以下两条命令：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>GLIB_CFLAGS<span style=color:#f92672>=</span><span style=color:#e6db74>`</span>pkg-config --cflags glib-2.0<span style=color:#e6db74>`</span>
+GLIB_LIBS<span style=color:#f92672>=</span><span style=color:#e6db74>`</span>pkg-config --libs glib-2.0<span style=color:#e6db74>`</span>
+</code></pre></div><p><code>GLIB_CFLAGS</code>和<code>GLIB_LIBS</code>这两个参数会在编写<code>Makefile.am</code>时用到。最后<code>AM_CONDITIONAL</code>用于设置条件变量，它会判断第二个参数提供的值是否为真，为真在第一个参数的值为<code>TRUE</code>，否则<code>FALSE</code>，这里定义的值同样是<code>Makefile.am</code>用到的。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>AC_CONFIG_HEADERS<span style=color:#f92672>([</span>config.h<span style=color:#f92672>])</span>
+AC_CONFIG_FILES<span style=color:#f92672>([</span>Makefile src/Makefile<span style=color:#f92672>])</span>
+AC_OUTPUT
+</code></pre></div><p>最后三句表明输出最终经过<code>./configure</code>之后生成的文件。注意每个子目录下都要有Makefile。至此这个<code>configure.ac</code>就完成了。</p>
+<h2 id=编写makefileam文件>编写Makefile.am文件</h2>
+<p>我们一共要编写两个<code>Makefile.am</code>文件。第一个位于根目录下，很简单，就一句话：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>SUBDIRS <span style=color:#f92672>=</span> src
+</code></pre></div><p>指定要递归进入的子目录。这里只有一项，当然可以指定许多项，空格隔开，且每个子目录下都要有<code>Makefile.am</code>文件。</p>
+<p>第二个<code>Makefile.am</code>文件自然是在<code>src</code>文件夹下。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-shell data-lang=shell>bin_PROGRAMS <span style=color:#f92672>=</span> convertor
+convertor_CFLAGS <span style=color:#f92672>=</span> -std<span style=color:#f92672>=</span>gnu99 -I<span style=color:#66d9ef>$(</span>srcdir<span style=color:#66d9ef>)</span>/../include -O
+<span style=color:#66d9ef>if</span> USE_GLIB
+    convertor_CFLAGS <span style=color:#f92672>+=</span> <span style=color:#66d9ef>$(</span>GLIB_CFLAGS<span style=color:#66d9ef>)</span>
+endif
+convertor_LDFLAGS <span style=color:#f92672>=</span> -pthread
+<span style=color:#66d9ef>if</span> USE_GLIB
+    convertor_LDADD <span style=color:#f92672>=</span> <span style=color:#66d9ef>$(</span>GLIB_LIBS<span style=color:#66d9ef>)</span>
+endif
+<span style=color:#75715e>#convertor_LDADD = -ldnet -lpcap</span>
+convertor_SOURCES <span style=color:#f92672>=</span> a.c b.c c.c
+</code></pre></div><p>这段代码还是很简洁易懂的，需要说明的有几点：</p>
+<ul>
+<li><code>bin_PROGRAMS</code>中的<code>bin</code>说明程序最终通过<code>make install</code>安装在<code>${exec_prefix}/bin</code>下。<code>${exec_prefix}</code>是<code>autoconf</code>预设的变量，默认值等于<code>${prefix}</code>，还有许多类似的项，如<code>lib</code>指明的会安装在<code>${exec_prefix}/lib</code>下，<code>noinst</code>则表明不安装。<code>PROGRAMS</code>则表明生成的可执行文件，类似的还有<code>LIBRARIES</code>表明库文件，<code>HEADERS</code>表明是头文件，等等，因为我这里用不到，也没有做其他的实验。</li>
+<li>通过第一项指定目标名字后，就可以通过<code>name_CFLAGS</code>、<code>name_LDFLAGS</code>、<code>name_SOURCES</code>等设置程序专属的变量，这些变量有的有相应的公共值由所有目标共享，例如<code>AM_CFALGS</code>、<code>AM_LDFLAGS</code>。</li>
+<li><code>LDADD</code>专门用于添加所需的库，由<code>LDADD</code>指定的库会被放在gcc链接命令最后，确保正确链接（如果写在<code>LDFLAGS</code>里会被写在gcc链接命令<code>.o</code>文件的前面导致无法正确链接），<code>LDADD</code>变量的公共版就叫<code>LDADD</code>，不用添加<code>AM_</code>前缀。另外，在<code>configure.ac</code>中通过<code>AC_CHECK_LIB</code>宏检测的库会自动添加到编译命令中，所以不需要单独设置，可以看到代码中那行被我注释了。</li>
+<li>这里也能看到<code>configure.ac</code>中指定的<code>USE_GLIB</code>、<code>GLIB_CFLAGS</code>、<code>GLIB_LIBS</code>的用法了，很清晰就不多说了。</li>
+</ul>
+<h2 id=参考资料>参考资料</h2>
+<p>编写完两个文件就能使用<code>autoreconf --install</code>命令生成所需的所有文件了，然后就能像最常见的程序那样<code>./configure && make && make install</code>编译安装了。</p>
+<p>最后给出我折腾过程中参考的资料。</p>
+<ul>
+<li>首先是我感觉最有价值的入门材料，做成了PPT的样子，不过通过PDF发布，一共是162张PPT，不过他把每一步动画都分隔到了一页上导致PDF显示有556页，刚开始看的时候吓尿了，后来发现其实还好。我基本上就是根着这个PDF学习的。这是<a href=https://www.lrde.epita.fr/~adl/autotools.html>下载地址</a>。</li>
+<li><a href=http://www.gnu.org/software/autoconf/manual/autoconf.html>Autoconf Manual</a>总是逃不掉的。</li>
+<li><a href=http://dl.e-book-free.com/2013/07/autotools.pdf>《AUTOTOOLS: A PRACTITIONER&rsquo;S GUIDE TO GNU AUTOCONF, AUTOMAKE, AND LIBTOOL》</a>，这个就比较狠了，是一本书，三百多页，当然也相对系统。</li>
+<li>网上各种博客，比如<a href=http://blog.csdn.net/scucj/article/details/6079052>这个</a>，不得不说autotools的中文资料很少，网上很多还是过期的，要想学习还得看英文，好痛苦。</li>
+</ul>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/compile-wireshark/ data-tooltip=Windows下编译Wireshark aria-label="下一篇: Windows下编译Wireshark">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/ data-tooltip="交叉编译ARM Native GCC" aria-label="上一篇: 交叉编译ARM Native GCC">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/compile-wireshark/ data-tooltip=Windows下编译Wireshark aria-label="下一篇: Windows下编译Wireshark">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/ data-tooltip="交叉编译ARM Native GCC" aria-label="上一篇: 交叉编译ARM Native GCC">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Windows下编译Wireshark","datePublished":"2014-10-20T00:00:00Z","dateModified":"2014-10-20T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2014\/10\/compile-wireshark\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。">
+<meta property="og:description" content="手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Windows下编译Wireshark">
+<meta name=twitter:title content="Windows下编译Wireshark">
+<meta property="og:url" content="https://blog.hljin.net/2014/10/compile-wireshark/">
+<meta property="twitter:url" content="https://blog.hljin.net/2014/10/compile-wireshark/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。">
+<meta name=twitter:description content="手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2014-10-20T00:00:00">
+<meta property="article:modified_time" content="2014-10-20T00:00:00">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<title>Windows下编译Wireshark</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2014/10/compile-wireshark/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div id=main data-behavior=4 class=hasCoverMetaIn>
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+Windows下编译Wireshark
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2014-10-20T00:00:00Z>
+十月 20, 2014
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>手头的项目用到了IP首部的Option字段，而且自定义了一个type，正常情况下Wireshark会显示为Unknown，为了演示的时候效果更好一些，我添加了一些代码让Wireshark支持自定义的Option类型，因为这不是单独的协议，不能用Lua等扩展，所以必须重新编译Wireshark，Linux下的编译非常简单，Windows下要繁琐的多，所以就有了这篇文章。</p>
+<h2 id=参考资料>参考资料</h2>
+<p>最主要的参考资料是Wireshark文档中<a href=https://www.wireshark.org/docs/wsdg_html_chunked/ChSetupWin32.html><code>Win32/64: Step-by-Step Guide</code></a>一节，当然我没有按照它上面说的完全照做，不然感觉更烦。
+网上的一些博客文章也有参考价值，例如<a href=http://www.360doc.com/content/14/0703/17/11764545_391768149.shtml>这篇</a>。</p>
+<h2 id=环境>环境</h2>
+<p>在Windows下编译这种软件还是找一个干净的环境比较好，确保一部成功，不然错了都不知道哪里有问题。我在虚拟机中全新安装了Windows 7 x64 SP1，然后安装了Visual Studio 2010 Ultimate，之后更新了Visual Studio 2010 SP1（装SP1比装VS本身还慢）。这里我没有像Wireshark文档中说的装Express版本（这个是免费的，上面那个是要钱的，咱就不讨论这个问题了……），也没有安装Windows SDK（这个是我感觉文档中描述的非常麻烦的一部分，因为微软本身的BUG，再加上从微软网站上下载的是网络安装程序，实验室网络连微软服务器速度慢得一塌糊涂，再加上感觉装了VS应该附带了Windows SDK，所以跳过了，后来也确实没出什么问题）。</p>
+<p>再之后安装Python 2.7.8的32位版本。然后安装QT5.3，我安装的是从北京交通大学镜像上下载的<a href=http://mirror.bjtu.edu.cn/qt/official_releases/qt/5.3/5.3.2/qt-opensource-windows-x86-msvc2010_opengl-5.3.2.exe><code>qt-opensource-windows-x86-msvc2010_opengl-5.3.2</code></a>版本（主要是速度快）。</p>
+<p>最后安装Cygwin，根据文档上写的，安装Cygwin的时候必须安装某些组件，以下是我安装的组件：</p>
+<ul>
+<li><code>Archive/unzip</code></li>
+<li><code>Devel/bison</code></li>
+<li><code>Devel/flex</code></li>
+<li><code>Devel/git</code></li>
+<li><code>Interpreters/perl</code></li>
+<li><code>Utils/patch</code></li>
+<li><code>Web/wget</code></li>
+<li><code>Interpreters/m4 </code></li>
+</ul>
+<p>反正就是文档里有的，不管是必须装的还是推荐的都给装上。这里还遇到了个坑爹问题，按照这个列表装完之后编译时还是报错，说是找不到<code>u2d</code>这个命令，这个命令应该是跟<code>unix2dos</code>功能类似的命令，然后我就在Cygwin的列表里搜<code>unix2dos</code>，搜不到，网上有的说这个命令应该在<code>cygutils</code>包里，但是这个包已经装了，反复卸掉重装、换源装都不行，最后才发现原来在<code>dos2unix</code>这个包里……所以<code>dos2unix</code>这个包应该也是要装的！</p>
+<p>以上所有的编译工具安装目录全部按照默认的来，一个都不要动，这样可以减少很多麻烦。</p>
+<h2 id=编译>编译</h2>
+<p>搞定环境后开始编译。</p>
+<p>第一步，下载Wireshark的源代码，我用的是1.12.1，解压后放到<code>C:\wireshark</code>文件夹下（其实随意）。然后编辑源代码根目录下的<code>config.nmake</code>文件，主要修改以下几个参数：</p>
+<ul>
+<li><code>VERSION_EXTRA</code>：自定义的说明，编译完成后会跟在版本号后面。</li>
+<li><code>QT5_BASE_DIR:</code>：QT5的安装目录，要求在这个文件夹下能找到<code>bin\qmake.exe</code>文件，如果用的是我上面的那个QT5安装程序并且安装位置默认，那么应该是<code>C:\Qt\Qt5.3.2\5.3\msvc2010_opengl</code>。</li>
+</ul>
+<p>其它的参数都没动，像文档里说的<code>MSVC_VARIANT</code> <code>WIRESHARK_TARGET_PLATFORM</code>这种都没动，如果安装路径都是默认的，<code>config.nmake</code>会自动设置所有参数。</p>
+<p>第二步，运行VS的脚本配置编译目标为x86，也就是32位的。32位的Wireshark编译出来32位64位Windows都能用，编译64位的Wireshark就只有64位的都能用了。方法：打开cmd，执行这个文件：</p>
+<pre><code>C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\vsvars32.bat
+</code></pre>
+<p>第三步，检查并下载相应组件。从开始菜单的VS目录中打开<code>Visual Studio 命令提示(2010)</code>（直接打开cmd会找不到<code>nmake</code>，除非你设置了<code>PATH</code>环境变量），定位到<code>C:\wireshark</code>（Wireshark源代码所在目录），执行：</p>
+<pre><code>nmake -f Makefile.nmake verify_tools
+</code></pre>
+<p>第一遍执行开始会报个错，说找不到<code>current_tag.txt</code>云云，这个没有关系，只要下面的<code>bison</code> <code>perl</code>这些程序都正常就ok。然后运行：</p>
+<pre><code>nmake -f Makefile.nmake setup
+</code></pre>
+<p>这个命令会安装所有的依赖库，包括汇编器、DNS库、GeoIP、GTK等等，当然这些包都是从网上下载的（所以前面才需要装<code>wget</code>），如果下载速度慢到受不了，可以换个网络环境手工下载，然后放到<code>C:\Wireshark-win32-libs-1.12</code>文件夹下（默认配置，这个目录可以在<code>config.nmake</code>里改）。</p>
+<p>所有依赖库安装完成后，再执行一边检查，应该不会报错了。</p>
+<p>第四步，编译。执行</p>
+<pre><code>nmake -f Makefile.nmake distclean
+nmake -f Makefile.nmake all
+</code></pre>
+<p>顺利的话就应该成功编译了。编译后会在Wireshark源代码根目录下的生成两个文件夹，<code>wireshark-gtk2</code>和<code>wireshark-qt-release</code>，其中<code>wireshark-gtk2</code>下就是通常的Wireshark程序了，可以直接运行<code>Wireshark.exe</code>(当然系统得安装了<code>WinPcap</code>，不然只是个壳子），<code>wireshark-qt-release</code>下放的是用Qt编译的Wireshark，执行文件为<code>qtshark</code>，是Wireshark2的预览版。</p>
+<h2 id=生成安装程序>生成安装程序</h2>
+<p>为了能在别的电脑上运行编译出的Wireshark，需要生成一个安装程序。先安装<code>NSIS</code>，最好下载2.46稳定版，3.0测试版会有BUG，下载32位版即可。安装时最好也安装到默认位置，这样可以不用再去修改<code>config.nmake</code>文件。然后到微软网站上下载<code>vcredist_x86.exe</code>文件，放到<code>C:\Wireshark-win32-libs-1.12</code>文件夹下。然后执行：</p>
+<pre><code>nmake -f Makefile.nmake packaging
+</code></pre>
+<p>成功后到<code>C:\wireshark\packaging\nsis\</code>文件夹下找生成的安装程序文件。这个安装程序已经自动打包了<code>WinPcap</code>，跟网上下载的Wireshark安装程序没什么两样。</p>
+<p>至此所有工作完成。</p>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/use-tun-tap/ data-tooltip=使用tun/tap将数据包导入协议栈 aria-label="下一篇: 使用tun/tap将数据包导入协议栈">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="上一篇: autotools折腾记">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/use-tun-tap/ data-tooltip=使用tun/tap将数据包导入协议栈 aria-label="下一篇: 使用tun/tap将数据包导入协议栈">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="上一篇: autotools折腾记">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>
