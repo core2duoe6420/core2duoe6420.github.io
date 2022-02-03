@@ -1,0 +1,353 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"折腾在电脑上看IPTV","datePublished":"2022-02-03T00:00:00Z","dateModified":"2022-02-03T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/02\/iptv-proxy\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。">
+<meta property="og:description" content="老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="折腾在电脑上看IPTV">
+<meta name=twitter:title content="折腾在电脑上看IPTV">
+<meta property="og:url" content="https://blog.hljin.net/2022/02/iptv-proxy/">
+<meta property="twitter:url" content="https://blog.hljin.net/2022/02/iptv-proxy/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。">
+<meta name=twitter:description content="老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2022-02-03T00:00:00">
+<meta property="article:modified_time" content="2022-02-03T00:00:00">
+<meta property="article:tag" content="network">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<title>折腾在电脑上看IPTV</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2022/02/iptv-proxy/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div id=main data-behavior=4 class=hasCoverMetaIn>
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+折腾在电脑上看IPTV
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2022-02-03T00:00:00Z>
+二月 3, 2022
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>老爸退休在家没有事做，最近不知为何喜欢上了在电脑上多开视频同时观看，问我能不能在电脑上看电视频道（主要是五星体育）。我之前就有看到过一些公共的IPTV频道可以直接用Potplayer播放，也知道有把电信的IPTV转发到电脑上的方案，只是我自己不看电视没有动力去折腾。最近算是尝试了一下。</p>
+<p>最简单的方案无疑是网上找公共的IPTV清单，比如这个https://github.com/iptv-org/iptv 是真的牛逼，全球的电视频道几乎都能看。但是很遗憾，有几个关键频道很卡，观看体验极差。于是只能折腾电信的IPTV。</p>
+<p>基本原理也不复杂，只要有一个接口加入85 VLAN，通过DHCP拿到一个IP，就能访问到电信的IPTV专网，接下来就是想办法让电脑可以接收到IGMP流量。</p>
+<h2 id=获取专网ip>获取专网IP</h2>
+<p>家里目前的网络结构是光猫改了桥接，光猫上的端口都绑定了85 VLAN：</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914587/posts/iptv-proxy/1643886244221_f3mmhk.png alt=1643886244221></p>
+<p>拨号由软路由负责，WAN口名字是<code>eth3</code>，软件是Koolshare的<code>LEDE v2.37</code>。在<code>LEDE</code>的网络配置里新增这么几行：</p>
+<pre tabindex=0><code>config interface 'VLAN85'
+	option proto 'dhcp'
+	option ifname 'eth3.85'
+</code></pre><p>保存后就看到新接口自动获取了电信的专网IP：</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914804/posts/iptv-proxy/1643914741498_pa5kqi.jpg alt=1643886480817></p>
+<h2 id=获取iptv流量>获取IPTV流量</h2>
+<p>这块在网上的信息非常杂乱，好多文章把好几种方式混在一起说，其实完全不必。我总结了一下，其实主要有3种方法，任何一种都能正常看到IPTV，当然每种方案都有利有弊：</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>使用此方案的地址</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>udpxy</code></td>
+<td>使用http单播<code>http://192.168.1.1:4022/udp/239.45.3.210:5140</code></td>
+<td>配置方便，没有广播风暴</td>
+<td>切频道的等待时间较长</td>
+</tr>
+<tr>
+<td><code>igmpproxy</code></td>
+<td>使用rtp组播<code>rtp://239.45.3.210:5140</code></td>
+<td>切频道的等待时间短</td>
+<td>即使开启<code>IGMP Snooping</code>，若下流设备不支持依然会有广播风暴</td>
+</tr>
+<tr>
+<td>使用回看地址</td>
+<td>使用rtsp单播<code>rtsp://124.75.34.37:554/PLTV/...434_0.smil</code></td>
+<td>支持回看</td>
+<td>不支持回看的频道就看不了了</td>
+</tr>
+</tbody>
+</table>
+<p>这三种方案我都试了一下，简要说下配置过程。</p>
+<h3 id=udpxy><code>udpxy</code></h3>
+<p><code>udpxy</code>的原理是监听一个端口，协议为HTTP，根据URL的规则解析出要连接的UDP地址和接口，然后进行流量转发。这里的地址将会是IPTV频道的IGMP组播地址。</p>
+<p><code>Openwrt</code>对<code>udpxy</code>提供了相当好的支持。首先通过以下命令安装：</p>
+<pre tabindex=0><code>opkg update
+opkg install udpxy luci-app-udpxy
+</code></pre><p>然后编辑<code>/etc/config/udpxy</code></p>
+<pre tabindex=0><code>config udpxy
+        option respawn '1'
+        option verbose '0'
+        option status '1'
+        option port '4022'
+        option disabled '0'
+        option bind 'br-lan'
+        option source 'eth3.85'
+</code></pre><p>这里比较关键的是<code>bind</code>和<code>source</code>两个选项，<code>bind</code>是监听内网的接口，<code>source</code>就是配置专网IP的接口。<code>udpxy</code>启动后可以通过<code>http://192.168.1.254:4022/status</code>来查看状态。</p>
+<p>使用<code>udpxy</code>的另一个优点是几乎不用动防火墙，不需要支持转发，不需要专网接口的NAT，只需要接受LAN网络的入站即可（这个一般都是开启的，否则根本访问不了<code>LEDE</code>）。</p>
+<p>配置好以后就可以用Potplayer打开一个地址试试能否播放了。</p>
+<h3 id=回看地址>回看地址</h3>
+<p>这个方案主要来自<a href=https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list>这个仓库</a>。这个仓库里的地址在两三年前似乎是可以公网访问的，也就是说任何人只要有网都能看。但是后来被电信封杀了，只能走电信的IPTV专网才能访问到。另外，这些地址不是直播地址，而是回放地址，所以也不知道实际延时落后多少，以下说明来自作者原话：</p>
+<blockquote>
+<p>这个播放列表使用IPTV的频道 回放 功能。IPTV直播用的是专网组播，无法直接通过Internet播放。因为不是所有频道都支持回放，所以这个列表里的频道 必然少于 IPTV的直播频道。</p>
+</blockquote>
+<p>这个方案的原理也很简单，我们只要让需要访问的IP走IPTV专网就可以了。</p>
+<p>首先，在<code>LEDE</code>的防火墙里，打开专网的“IP伪装”（NAT），设置转发为接受。设置LAN到专网的转发为接受。</p>
+<p>然后需要添加几条路由让这些地址走IPTV专网而不是默认网关。命令格式如下：</p>
+<pre tabindex=0><code>ip route add 124.75.34.0/24 via 23.x.x.x dev eth3.85
+</code></pre><p>其中<code>124.75.34.0/24</code>的部分有好多条，需要通过Wireshark抓包一次次跳转尝试，我这边只试了一个频道，跳转了2次，一共3个地址。<a href=https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/28>这个Issue</a>里有人总结了几个地址可以作为参考。</p>
+<p><code>23.x.x.x</code>这个部分要用专网的网关代替，这个信息正常应该是从DHCP中获得的，但是我没有找到DHCP的日志，所以只能靠盲猜，使用本网段广播地址-1的最高地址，居然成功了。</p>
+<p>这个方案要正式投入使用还需要一些工程方面的工作，例如收集IP段，写个脚本应对DHCP获得的地址变化的情况，所以并不会投入实际使用。</p>
+<h3 id=igmpproxy>igmpproxy</h3>
+<p>这个方案害我折腾了好久。它的大致原理在<a href=https://openwrt.org/docs/guide-user/network/wan/udp_multicast>Openwrt文档</a>里写的挺清楚了，大致上是在路由器上跑一个<code>igmpproxy</code>，它使用<code>raw socket</code>监听所有IP协议为<code>2（IGMP）</code>的数据包，发现有请求加入IP组的包后，就由自己向专网发送加入IP组的包，然后添加一条IP路由，剩下的流量就由路由表负责了。</p>
+<p>首先安装：</p>
+<pre tabindex=0><code>opkg update
+opkg install igmpproxy
+</code></pre><p>然后编辑配置文件<code>/etc/config/igmpproxy</code></p>
+<pre tabindex=0><code>config igmpproxy
+        option quickleave 1
+
+config phyint
+        option network VLAN85
+        option zone VLAN85
+        option direction upstream
+        list altnet 0.0.0.0/0
+
+config phyint
+        option network lan
+        option zone lan
+        option direction downstream
+        list whitelist 239.45.0.0/16 # 这个很坑，下面说
+</code></pre><p>最后使用<code>service igmpproxy restart</code>启动即可。</p>
+<p>关于这个配置文件，在文档里说明得比较详细了，这个<code>zone</code>不能省略，因为启动脚本会通过这个字段来添加几条iptables规则，使得UDP流量可以顺利通过。</p>
+<p>防火墙方面，这个方案不需要IP伪装（NAT），正常情况下转发规则会在<code>igmpproxy</code>启动时（一定要通过脚本启动）被添加进防火墙，如果没法正常工作，那么可以尝试打开LAN和专网之间的转发。</p>
+<p>配置好后，使用Potplayer打开<code>rtp://239.45.3.210:5140</code>应该就能播放了。</p>
+<p>接下来说一下这个方案坑的地方。</p>
+<p>首先是<a href=https://github.com/pali/igmpproxy/issues/61>这个Issue</a>里说的问题，<code>igmpproxy</code>好像会转发<code>224.0.0.0/24</code>的流量，这个地址是本地流量不应该被转发。最新版的<code>igmpproxy</code>加入了对<code>whitelist</code>配置的支持，就是我上面配置文件中加入的那行，然而，<code>Openwrt</code>的配置工具没有支持这个选项，所以那行加了等于白加。这个问题导致了另一个问题就是Velop不认网络了，指示灯直接变红（联网并没有问题），垃圾领势软件做的太差。</p>
+<p>其次就是导致我折腾了半天的原因，但这其实不是<code>igmpproxy</code>本身的问题，而是我电脑系统的问题。<code>IGMP</code>在加入一个IP组时，会由客户端发出一个Membership Report的数据包，像这样：</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914587/posts/iptv-proxy/1643890616060_gvmmpg.png alt=1643890616060></p>
+<p>然而在我的电脑上这个包死活是不发的。我使用虚拟机启动了一台Windows和Ubuntu，测试后总算确认不是<code>igmpproxy</code>的配置问题，因为虚拟出来的系统都能正常工作，只有宿主机自己死活不发，关掉Windows防火墙也没有用。这个问题最终也没有解决，不想折腾了。</p>
+<h2 id=epg和kodi>EPG和KODI</h2>
+<p>总之最后还是决定使用<code>udpxy</code>的方案。在研究的过程中发现有人提到了EPG，全称Electronic Program Guide，配合KODI可以实现很不错的效果：</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914588/posts/iptv-proxy/1643890989724_jgk2ex.png alt=1643890989724></p>
+<p>这个主要就是些配置活，可以参考<a href=http://www.kodiplayer.cn/course/2925.html>KODI的文档</a>，还有<a href=https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/28#issuecomment-778612495>这楼里</a>老哥给出的频道列表。</p>
+<h2 id=参考资料>参考资料</h2>
+<ul>
+<li>不能用KODI看的IPTV不是真4K <a href=https://post.smzdm.com/p/alx7n2ke/>https://post.smzdm.com/p/alx7n2ke/</a></li>
+<li>电信公网疑似已屏蔽回放源IP <a href=https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/28>https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/28</a></li>
+<li>给Kodi直播电视添加电子节目单EPG 电视节目指南 <a href=http://www.kodiplayer.cn/course/2925.html>http://www.kodiplayer.cn/course/2925.html</a></li>
+<li>频道抓包结果（包括节目名称） <a href=https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/35>https://github.com/lucifersun/China-Telecom-ShangHai-IPTV-list/issues/35</a></li>
+<li>上海电信iptv最全的组播地址 12月5日新鲜出炉未分类 <a href=https://www.right.com.cn/forum/thread-724974-1-1.html>https://www.right.com.cn/forum/thread-724974-1-1.html</a></li>
+<li>Openwrt与IPTV之一——igmpproxy <a href=https://www.cnblogs.com/harryzwh/p/4279316.html>https://www.cnblogs.com/harryzwh/p/4279316.html</a></li>
+<li>Openwrt与IPTV之二——udpxy <a href=https://www.cnblogs.com/harryzwh/p/4279335.html>https://www.cnblogs.com/harryzwh/p/4279335.html</a></li>
+<li>IPTV共享之填坑篇+组播地址 <a href=https://wp.gxnas.com/4058.html>https://wp.gxnas.com/4058.html</a></li>
+<li>「IPTV 与互联网融合」全解析 igmpproxy udpxy IGMP RTSP 抓包 直播源 四川 电信 <a href=https://www.right.com.cn/forum/thread-2470633-1-1.html>https://www.right.com.cn/forum/thread-2470633-1-1.html</a></li>
+<li>IPTV融合进普通网络一般步骤 <a href=https://www.right.com.cn/forum/thread-248400-1-1.html>https://www.right.com.cn/forum/thread-248400-1-1.html</a></li>
+<li>利用OpenWrt系统拓宽IPTV使用范围 <a href=https://www.red-yellow.net/>https://www.red-yellow.net/</a>利用OpenWrt系统拓宽IPTV使用范围.html</li>
+<li>How IGMP operates <a href=https://techhub.hpe.com/eginfolib/networking/docs/switches/K-KA-KB/15-18/5998-8164_mrg/content/ch01s08.html>https://techhub.hpe.com/eginfolib/networking/docs/switches/K-KA-KB/15-18/5998-8164_mrg/content/ch01s08.html</a></li>
+<li>IPTV / UDP multicast <a href=https://openwrt.org/docs/guide-user/network/wan/udp_multicast>https://openwrt.org/docs/guide-user/network/wan/udp_multicast</a></li>
+<li>Filter all local multicast <a href=https://github.com/pali/igmpproxy/issues/61>https://github.com/pali/igmpproxy/issues/61</a></li>
+</ul>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-footer-tags>
+<span class="text-color-light text-small">标签</span><br>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/network/>network</a>
+</div>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2020/02/docker-dns-troubleshooting/ data-tooltip="记一次Docker DNS排障" aria-label="上一篇: 记一次Docker DNS排障">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2020/02/docker-dns-troubleshooting/ data-tooltip="记一次Docker DNS排障" aria-label="上一篇: 记一次Docker DNS排障">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>
