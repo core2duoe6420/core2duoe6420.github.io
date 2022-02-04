@@ -120,6 +120,9 @@
 <pre tabindex=0><code>config interface 'VLAN85'
 	option proto 'dhcp'
 	option ifname 'eth3.85'
+        option defaultroute '0'
+	option multipath 'off'
+	option peerdns '0'
 </code></pre><p>保存后就看到新接口自动获取了电信的专网IP：</p>
 <p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914804/posts/iptv-proxy/1643914741498_pa5kqi.jpg alt=1643886480817></p>
 <h2 id=获取iptv流量>获取IPTV流量</h2>
@@ -156,7 +159,7 @@
 </table>
 <p>这三种方案我都试了一下，简要说下配置过程。</p>
 <h3 id=udpxy><code>udpxy</code></h3>
-<p><code>udpxy</code>的原理是监听一个端口，协议为HTTP，根据URL的规则解析出要连接的UDP地址和接口，然后进行流量转发。这里的地址将会是IPTV频道的IGMP组播地址。</p>
+<p><code>udpxy</code>的原理是监听一个端口，协议为HTTP，根据URL的规则解析出要连接的组播地址和接口，然后进行流量转发。这里的地址将会是IPTV频道的IGMP组播地址。</p>
 <p><code>Openwrt</code>对<code>udpxy</code>提供了相当好的支持。首先通过以下命令安装：</p>
 <pre tabindex=0><code>opkg update
 opkg install udpxy luci-app-udpxy
@@ -209,7 +212,7 @@ config phyint
 <p>防火墙方面，这个方案不需要IP伪装（NAT），正常情况下转发规则会在<code>igmpproxy</code>启动时（一定要通过脚本启动）被添加进防火墙，如果没法正常工作，那么可以尝试打开LAN和专网之间的转发。</p>
 <p>配置好后，使用Potplayer打开<code>rtp://239.45.3.210:5140</code>应该就能播放了。</p>
 <p>接下来说一下这个方案坑的地方。</p>
-<p>首先是<a href=https://github.com/pali/igmpproxy/issues/61>这个Issue</a>里说的问题，<code>igmpproxy</code>好像会转发<code>224.0.0.0/24</code>的流量，这个地址是本地流量不应该被转发。最新版的<code>igmpproxy</code>加入了对<code>whitelist</code>配置的支持，就是我上面配置文件中加入的那行，然而，<code>Openwrt</code>的配置工具没有支持这个选项，所以那行加了等于白加。这个问题导致了另一个问题就是Velop不认网络了，指示灯直接变红（联网并没有问题），垃圾领势软件做的太差。</p>
+<p>首先是<a href=https://github.com/pali/igmpproxy/issues/61>这个Issue</a>里说的问题，<code>igmpproxy</code>好像会转发<code>224.0.0.0/24</code>的流量，这个地址是本地流量不应该被转发。最新版的<code>igmpproxy</code>加入了对<code>whitelist</code>配置的支持，就是我上面配置文件中加入的那行，然而，<code>Openwrt</code>的配置工具没有支持这个选项，所以那行加了等于白加。<del>这个问题导致了另一个问题就是Velop不认网络了，指示灯直接变红（联网并没有问题），垃圾领势软件做的太差。</del>（2月5日更新：这个问题得到了解决，不是由<code>igmpproxy</code>造成的，之后再写文章说）</p>
 <p>其次就是导致我折腾了半天的原因，但这其实不是<code>igmpproxy</code>本身的问题，而是我电脑系统的问题。<code>IGMP</code>在加入一个IP组时，会由客户端发出一个Membership Report的数据包，像这样：</p>
 <p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643914587/posts/iptv-proxy/1643890616060_gvmmpg.png alt=1643890616060></p>
 <p>然而在我的电脑上这个包死活是不发的。我使用虚拟机启动了一台Windows和Ubuntu，测试后总算确认不是<code>igmpproxy</code>的配置问题，因为虚拟出来的系统都能正常工作，只有宿主机自己死活不发，关掉Windows防火墙也没有用。这个问题最终也没有解决，不想折腾了。</p>
