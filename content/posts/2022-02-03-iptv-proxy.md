@@ -26,6 +26,9 @@ tags:
 config interface 'VLAN85'
 	option proto 'dhcp'
 	option ifname 'eth3.85'
+        option defaultroute '0'
+	option multipath 'off'
+	option peerdns '0'
 ```
 
 保存后就看到新接口自动获取了电信的专网IP：
@@ -46,7 +49,7 @@ config interface 'VLAN85'
 
 ### `udpxy`
 
-`udpxy`的原理是监听一个端口，协议为HTTP，根据URL的规则解析出要连接的UDP地址和接口，然后进行流量转发。这里的地址将会是IPTV频道的IGMP组播地址。
+`udpxy`的原理是监听一个端口，协议为HTTP，根据URL的规则解析出要连接的组播地址和接口，然后进行流量转发。这里的地址将会是IPTV频道的IGMP组播地址。
 
 `Openwrt`对`udpxy`提供了相当好的支持。首先通过以下命令安装：
 
@@ -137,7 +140,7 @@ config phyint
 
 接下来说一下这个方案坑的地方。
 
-首先是[这个Issue](https://github.com/pali/igmpproxy/issues/61)里说的问题，`igmpproxy`好像会转发`224.0.0.0/24`的流量，这个地址是本地流量不应该被转发。最新版的`igmpproxy`加入了对`whitelist`配置的支持，就是我上面配置文件中加入的那行，然而，`Openwrt`的配置工具没有支持这个选项，所以那行加了等于白加。这个问题导致了另一个问题就是Velop不认网络了，指示灯直接变红（联网并没有问题），垃圾领势软件做的太差。
+首先是[这个Issue](https://github.com/pali/igmpproxy/issues/61)里说的问题，`igmpproxy`好像会转发`224.0.0.0/24`的流量，这个地址是本地流量不应该被转发。最新版的`igmpproxy`加入了对`whitelist`配置的支持，就是我上面配置文件中加入的那行，然而，`Openwrt`的配置工具没有支持这个选项，所以那行加了等于白加。~~这个问题导致了另一个问题就是Velop不认网络了，指示灯直接变红（联网并没有问题），垃圾领势软件做的太差。~~（2月5日更新：这个问题得到了解决，不是由`igmpproxy`造成的，之后再写文章说）
 
 其次就是导致我折腾了半天的原因，但这其实不是`igmpproxy`本身的问题，而是我电脑系统的问题。`IGMP`在加入一个IP组时，会由客户端发出一个Membership Report的数据包，像这样：
 
