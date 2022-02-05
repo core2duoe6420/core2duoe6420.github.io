@@ -4,7 +4,7 @@ date: 2022-02-05
 slug: velop-red-issue
 coverImage: https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/velop_tztin8.jpg
 coverMeta: out
-thumbnailImagePosition: left
+thumbnailImagePosition: right
 thumbnailImage: https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/sf217443-002_en_v8_rsxhyt.png
 ---
 
