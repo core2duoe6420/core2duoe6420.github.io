@@ -1,3 +1,12 @@
 .main-content-wrap {
     max-width: 1000px;
 }
+
+img[src$='#center']
+{
+    margin: 0 auto;
+}
+
+ul, ol {
+    margin-top: 1.5em;
+}

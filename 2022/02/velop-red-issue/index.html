@@ -1,0 +1,261 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"解决Linksys Velop指示灯变红但是网络通畅的问题","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/velop_tztin8.jpg","datePublished":"2022-02-05T00:00:00Z","dateModified":"2022-02-05T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/02\/velop-red-issue\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"在之前折腾IPTV的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是igmpproxy引起的问题，后来发现关闭igmpproxy后问题依旧。本文记录了解决此问题的过程。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="在之前折腾IPTV的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是igmpproxy引起的问题，后来发现关闭igmpproxy后问题依旧。本文记录了解决此问题的过程。">
+<meta property="og:description" content="在之前折腾IPTV的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是igmpproxy引起的问题，后来发现关闭igmpproxy后问题依旧。本文记录了解决此问题的过程。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解决Linksys Velop指示灯变红但是网络通畅的问题">
+<meta name=twitter:title content="解决Linksys Velop指示灯变红但是网络通畅的问题">
+<meta property="og:url" content="https://blog.hljin.net/2022/02/velop-red-issue/">
+<meta property="twitter:url" content="https://blog.hljin.net/2022/02/velop-red-issue/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="在之前折腾IPTV的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是igmpproxy引起的问题，后来发现关闭igmpproxy后问题依旧。本文记录了解决此问题的过程。">
+<meta name=twitter:description content="在之前折腾IPTV的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是igmpproxy引起的问题，后来发现关闭igmpproxy后问题依旧。本文记录了解决此问题的过程。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2022-02-05T00:00:00">
+<meta property="article:modified_time" content="2022-02-05T00:00:00">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/velop_tztin8.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/velop_tztin8.jpg">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/sf217443-002_en_v8_rsxhyt.png">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/sf217443-002_en_v8_rsxhyt.png">
+<title>解决Linksys Velop指示灯变红但是网络通畅的问题</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2022/02/velop-red-issue/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div class="post-header-cover
+text-left" style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1644055415/posts/velop-red-issue/velop_tztin8.jpg) data-behavior=4>
+</div>
+<div id=main data-behavior=4 class="hasCover
+hasCoverMetaOut">
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+解决Linksys Velop指示灯变红但是网络通畅的问题
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2022-02-05T00:00:00Z>
+二月 5, 2022
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>在之前<a href=https://blog.hljin.net/2022/02/iptv-proxy/>折腾IPTV</a>的过程中，发现用来做AP的Linksys Velop的网络指示灯变成了红色，但是我电脑上的网络一切正常。起初以为是<code>igmpproxy</code>引起的问题，后来发现关闭<code>igmpproxy</code>后问题依旧。本文记录了解决此问题的过程。</p>
+<p>首先，经过一系列的关停重启操作后，发现问题出现的规律如下：</p>
+<ul>
+<li>启动VLAN 85的接口<code>eth3.85</code>，大约5分钟后Velop的指示灯会变红</li>
+<li>关闭<code>eth3.85</code>，大约15秒内Velop的指示灯会恢复成正常的蓝色</li>
+</ul>
+<p>到此只能猜测Velop发出了某些网络探针，而开启<code>eth3.85</code>导致了这种探针失败。但是由于Velop的软件做的实在太烂，是个完全的黑盒子，默认的管理界面上几乎什么信息都没有，所以根本无从知道这种探针究竟是什么。最初的怀疑是探针访问的服务器落在了IPTV专网的<code>23.3.0.0/17</code>内，导致流量被引入了IPTV专网从而失败。</p>
+<p>Google一番后，发现网络上关于Velop的资料实在太少了，仅在reddit上发现了下面几篇：</p>
+<ul>
+<li><a href=https://www.reddit.com/r/LinksysVelop/comments/iu31w3/red_lights_but_all_appears_to_be_working/>Red lights but all appears to be working</a></li>
+<li><a href=https://www.reddit.com/r/pihole/comments/gn7rtf/linksys_velop_red_light_despite_devices_connected/>Linksys Velop Red Light Despite Devices Connected Just Fine</a></li>
+<li><a href=https://www.reddit.com/r/LinksysVelop/comments/ip0h3k/linksys_velop_wired_backhaul/>linksys velop wired backhaul</a></li>
+</ul>
+<p>事实上，前两个帖子已经揭露了造成这个问题的原因很可能和<code>heartbeat.belkin.com</code>这个域名有关，不过我还是走了不少弯路。</p>
+<p>上面的第三个链接中有提到<code>sysinfo.cgi</code>可以看到一些Velop的内部日志。我试了一下果然可以，然而这个cgi只是访问的时候跑一遍各种命令然后回显输出，最关键的<code>/var/log/message</code>只显示200行。为了追踪日志我写了个Python脚本轮询日志，脚本放在了<a href=https://gist.github.com/core2duoe6420/3361c0ed7d9a654bd056f3c953d10767>这里</a>。</p>
+<p>日志里我比较在意的有以下几点：</p>
+<ul>
+<li>service.devidentd Ethernet Agent: EthUtil returns multiple MACs 这条日志大量重复，然而Google后一无所获</li>
+<li>service.status Subscriber: Subject &lsquo;network/AC4C4927-CC4A-0BF1-B850-302303D68097/WLAN/neighbors&rsquo; matches subscribed topic &lsquo;network/+/WLAN/neighbors&rsquo;</li>
+<li>lldpd.status lldpd event lldp::update received.</li>
+</ul>
+<p>后面两条日志让我有了奇怪的猜测，会不会存在某种WAN通知机制让路由器告诉Velop，“我这边增加一个网络”，例如第三条日志里的LLDP？当然，事实证明这完全是扯淡🤣。</p>
+<p>从日志中没有什么收获，只能寄希望于抓包，看看在打开和关闭<code>eth3.85</code>前后时间内，Openwrt和Velop到底进行了哪些通信。于是在与Velop连接的端口<code>eth0</code>上启动tcpdump，然后用Wireshark分析。</p>
+<p>一开始我重点关注了上文提到的<code>heartbeat.belkin.com</code>这个域名，但是发现Velop指示灯变红的时候，对这个域名的DNS和ping都是正常的。</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/v1644051527/posts/velop-red-issue/20220205165652_bdlds6.png alt=20220205165652_bdlds6></p>
+<p>于是开始怀疑是这并不是我要找的探针。接下来花了一个多小时试图找出两种情况下流量的不同之处，然而并没有什么成果。直到我偶然间发现有一次对<code>heartbeat.belkin.com</code>发起的AAAA记录的查询居然有响应（其他相同的请求时没有的），于是最终还是怀疑到了DNS头上。我尝试取消勾选Openwrt里VLAN85接口的“自动获取DNS服务器”，然后保持<code>eth3.85</code>打开，此后Velop一直保持正常状态没有再变红。</p>
+<p><img src=https://res.cloudinary.com/core2duoe6420/image/upload/c_scale,w_500/v1644052201/posts/velop-red-issue/20220205170826_bvcqb6.png#center alt=20220205170826_bvcqb6></p>
+<p>为了确认，把“自动获取DNS服务器”重新打开，几分钟后Velop指示灯又变红，并且在Openwrt的dnsmasq使用的上游DNS配置文件<code>/tmp/resolv.conf.d/resolv.conf.auto</code>中发现确实多出了IPTV专网DHCP获取到的DNS，并且是10开头的本地网段。经过测试后发现这个DNS服务器会响应请求，只是速度很慢，并且响应的地址会掺杂IPv6地址。我的电脑因为使用了旁路由，许多DNS请求被代理了，所以影响不大。爸妈那边也确实反映了网络不通畅，响应速度慢，只是我没有重视。</p>
+<p>至此这个问题基本得到了解决。最后还是想吐槽Velop的软件做的是真的烂👎</p>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/iptv-proxy/ data-tooltip=折腾在电脑上看IPTV aria-label="上一篇: 折腾在电脑上看IPTV">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--disabled">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/iptv-proxy/ data-tooltip=折腾在电脑上看IPTV aria-label="上一篇: 折腾在电脑上看IPTV">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>
