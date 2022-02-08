@@ -168,8 +168,19 @@ canonifyurls = true
 
   [params.comment]
     [params.comment.disqus]
+      enable = false
+    [params.comment.gitalk]
       enable = true
-      shortname = "core2duoe6420"
+      clientId = "2d9c9d837f8496107211"
+      clientSecret = "5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2"
+      owner = "core2duoe6420"
+      repo = "core2duoe6420/core2duoe6420.github.io"
+      [params.comment.gitalk.options]
+        language = "zh-CN"
+        perPage = 10
+        distractionFreeMode = false
+        enableHotKey = true
+        pagerDirection = "first"
 
   [params.footer]
     copyright = "Powered by Hugo with tranquilpeak"
