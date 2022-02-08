@@ -166,5 +166,10 @@ canonifyurls = true
     icon = ""
     url = "/#about"
 
+  [params.comment]
+    [params.comment.disqus]
+      enable = true
+      shortname = "core2duoe6420"
+
   [params.footer]
     copyright = "Powered by Hugo with tranquilpeak"
