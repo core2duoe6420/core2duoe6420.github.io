@@ -10,3 +10,34 @@ img[src$='#center']
 ul, ol {
     margin-top: 1.5em;
 }
+
+li > ul,
+li > ol {
+    margin-top: 0;
+}
+
+code {
+    background-color: rgb(252, 245, 249);
+    color: rgb(215, 104, 131);
+    margin: 0 3px;
+    padding: 0 6px;
+}
+
+h1 > code,
+h2 > code,
+h3 > code,
+h4 > code,
+h5 > code,
+h6 > code {
+    font-size: unset;
+    font-weight: bold;
+}
+
+table tr:nth-child(2n) {
+    background-color: unset;
+}
+
+table th,
+table td {
+    border: 1px solid #eee;
+}
