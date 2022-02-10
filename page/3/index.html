@@ -1,6 +1,6 @@
 <!doctype html><html lang=zh-cn>
 <head>
-<script type=application/ld+json>{"@context":"http://schema.org","@type":"Website","@id":"https:\/\/blog.hljin.net\/","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"name":"Alex King\u0027s blog","description":"Alex King\u0027s blog","url":"https:\/\/blog.hljin.net\/tags\/docker\/","keywords":"[]"}</script>
+<script type=application/ld+json>{"@context":"http://schema.org","@type":"Website","@id":"https:\/\/blog.hljin.net\/","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"name":"Alex King\u0027s blog","description":"Alex King\u0027s blog","url":"https:\/\/blog.hljin.net\/","keywords":"[]"}</script>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <meta http-equiv=x-ua-compatible content="IE=edge">
@@ -10,10 +10,10 @@
 <meta name=description content="Alex King's blog">
 <meta property="og:description" content="Alex King's blog">
 <meta property="og:type" content="website">
-<meta property="og:title" content="docker">
-<meta name=twitter:title content="docker">
-<meta property="og:url" content="https://blog.hljin.net/tags/docker/">
-<meta property="twitter:url" content="https://blog.hljin.net/tags/docker/">
+<meta property="og:title" content="Alex King's blog">
+<meta name=twitter:title content="Alex King's blog">
+<meta property="og:url" content="https://blog.hljin.net/">
+<meta property="twitter:url" content="https://blog.hljin.net/">
 <meta property="og:site_name" content="Alex King's blog">
 <meta property="og:description" content="Alex King's blog">
 <meta name=twitter:description content="Alex King's blog">
@@ -21,10 +21,10 @@
 <meta name=twitter:card content="summary">
 <meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
 <meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
-<title>docker</title>
+<title>Alex King's blog</title>
 <link rel=icon href=https://blog.hljin.net/favicon.png>
-<link rel=alternate type=application/rss+xml title=RSS href=https://blog.hljin.net/tags/docker/index.xml>
-<link rel=canonical href=https://blog.hljin.net/tags/docker/>
+<link rel=alternate type=application/rss+xml title=RSS href=https://blog.hljin.net/index.xml>
+<link rel=canonical href=https://blog.hljin.net/>
 <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
 <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
 <link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer>
@@ -101,46 +101,35 @@
 <div class=postShorten-wrap>
 <div class=postShorten-header>
 <h1 class=postShorten-title>
-<a class=link-unstyled href=https://blog.hljin.net/2022/02/docker-daemon-tls/ aria-label="打开帖子: 启用Docker Daemon的TLS连接">
-启用Docker Daemon的TLS连接
+<a class=link-unstyled href=https://blog.hljin.net/2014/09/settle-down/ aria-label="打开帖子: 安家落户">
+安家落户
 </a>
 </h1>
 <div class="postShorten-meta post-meta">
-<time datetime=2022-02-10T00:00:00Z>
-二月 10, 2022
+<time datetime=2014-09-09T00:00:00Z>
+九月 9, 2014
 </time>
 </div>
 </div>
 <div class=postShorten-excerpt>
-<p>背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。</p>
+<p>以前刚玩VPS的时候做过一个blog，但是没写几篇文章就被我荒废了。博客还是比较适合发技术文章吧，要是发心情文章又有谁回来看，但我每次折腾完一个东西后都感觉很累，真的是折腾，总是遇到莫名其妙的问题，然后也就不高兴写文章了，所以这个博客能坚持多久，我也不知道。当然，也是受到了wjx的影响，这货最近写博客写的很起劲，搞得有声有色的，<a href=http://devopstarter.info>链接在此</a>，所以弄得我也想搞了。</p>
 <p>
-<a href=https://blog.hljin.net/2022/02/docker-daemon-tls/ class="postShorten-excerpt_link link" aria-label="打开帖子: 启用Docker Daemon的TLS连接">阅读全文</a>
+<a href=https://blog.hljin.net/2014/09/settle-down/ class="postShorten-excerpt_link link" aria-label="打开帖子: 安家落户">阅读全文</a>
 </p>
 </div>
 </div>
 </article>
-<article class="postShorten postShorten--thumbnailimg-bottom">
-<div class=postShorten-wrap>
-<div class=postShorten-header>
-<h1 class=postShorten-title>
-<a class=link-unstyled href=https://blog.hljin.net/2020/02/docker-dns-troubleshooting/ aria-label="打开帖子: 记一次Docker DNS排障">
-记一次Docker DNS排障
+<div class=pagination-bar>
+<ul class=pagination>
+<li class=pagination-prev>
+<a class="btn btn--default btn--small" href=https://blog.hljin.net/page/2/ aria-label=上一页>
+<i class="fa fa-angle-left text-base icon-mr"></i>
+<span>上一页</span>
 </a>
-</h1>
-<div class="postShorten-meta post-meta">
-<time datetime=2020-02-04T00:00:00Z>
-二月 4, 2020
-</time>
+</li>
+<li class=pagination-number>第 3 页 共 3 页</li>
+</ul>
 </div>
-</div>
-<div class=postShorten-excerpt>
-<p>今天下午同事来找我，说遇到了一个容器内无法解析域名的问题，我心想DNS问题不难解决，然后就开始了长达8小时的排障过程。</p>
-<p>
-<a href=https://blog.hljin.net/2020/02/docker-dns-troubleshooting/ class="postShorten-excerpt_link link" aria-label="打开帖子: 记一次Docker DNS排障">阅读全文</a>
-</p>
-</div>
-</div>
-</article>
 </section>
 <footer id=footer class=main-content-wrap>
 <span class=copyrights>
