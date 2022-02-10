@@ -1,0 +1,496 @@
+<!doctype html><html lang=zh-cn>
+<head>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Effective Modern C++学习笔记","datePublished":"2016-06-14T00:00:00Z","dateModified":"2016-06-14T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2016\/06\/effective-modern-cpp-excerpt\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"本文是Effective Modern C++的一些学习笔记。\n","keywords":[]}</script>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="IE=edge">
+<meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
+<meta name=author content="Alex King">
+<meta name=keywords content>
+<meta name=description content="本文是Effective Modern C++的一些学习笔记。">
+<meta property="og:description" content="本文是Effective Modern C++的一些学习笔记。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective Modern C++学习笔记">
+<meta name=twitter:title content="Effective Modern C++学习笔记">
+<meta property="og:url" content="https://blog.hljin.net/2016/06/effective-modern-cpp-excerpt/">
+<meta property="twitter:url" content="https://blog.hljin.net/2016/06/effective-modern-cpp-excerpt/">
+<meta property="og:site_name" content="Alex King's blog">
+<meta property="og:description" content="本文是Effective Modern C++的一些学习笔记。">
+<meta name=twitter:description content="本文是Effective Modern C++的一些学习笔记。">
+<meta property="og:locale" content="zh-cn">
+<meta property="article:published_time" content="2016-06-14T00:00:00">
+<meta property="article:modified_time" content="2016-06-14T00:00:00">
+<meta property="article:tag" content="C++">
+<meta name=twitter:card content="summary">
+<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
+<title>Effective Modern C++学习笔记</title>
+<link rel=icon href=https://blog.hljin.net/favicon.png>
+<link rel=canonical href=https://blog.hljin.net/2016/06/effective-modern-cpp-excerpt/>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer>
+<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
+<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
+</head>
+<body>
+<div id=blog>
+<header id=header data-behavior=4>
+<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
+<div class=header-title>
+<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
+</div>
+<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
+<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+</header>
+<nav id=sidebar data-behavior=4>
+<div class=sidebar-container>
+<div class=sidebar-profile>
+<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
+<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+</a>
+<h4 class=sidebar-profile-name>Alex King</h4>
+<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
+</div>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
+<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
+<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
+<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
+<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
+<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span>
+</a>
+</li>
+<li class=sidebar-button>
+<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
+<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span>
+</a>
+</li>
+</ul>
+<ul class=sidebar-buttons>
+</ul>
+</div>
+</nav>
+<div id=main data-behavior=4 class=hasCoverMetaIn>
+<article class=post id=top>
+<div class="post-header main-content-wrap text-left">
+<h1 class=post-title>
+Effective Modern C++学习笔记
+</h1>
+<div class="postShorten-meta post-meta">
+<time datetime=2016-06-14T00:00:00Z>
+六月 14, 2016
+</time>
+</div>
+</div>
+<div class="post-content markdown">
+<div class=main-content-wrap>
+<p>本文是Effective Modern C++的一些学习笔记。</p>
+<h2 id=类型推导规则-1-2>类型推导规则 #1 #2</h2>
+<p>形如</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+<span style=color:#66d9ef>void</span> f(ParamType param);
+
+f(expr);
+</code></pre></div><p>通过<code>expr</code>推导出<code>T</code>和<code>ParamType</code>两个类型。区分以下3种情况：</p>
+<ul>
+<li><code>ParamType</code>是指针或引用类型，但不是通用引用（形如<code>T&&</code>）；</li>
+<li><code>ParamType</code>是通用引用；</li>
+<li><code>ParamType</code>既不是指针也不是引用。</li>
+</ul>
+<p>基本规则为：</p>
+<ul>
+<li>当<code>ParamType</code>是引用时，推导<code>T</code>时引用会被忽略，<code>const</code>和<code>volatile</code>会被保留；</li>
+<li>当<code>ParamType</code>是通用引用时，如果<code>expr</code>是左值，推导<code>T</code>和<code>param</code>的类型时会推导出左值引用类型，如果<code>expr</code>是右值，推导<code>T</code>时引用会被忽略，<code>param</code>的类型被推导为右值引用；</li>
+<li><code>ParamType</code>既不是引用也不是指针时，推导时引用会被忽略，<code>const</code>和<code>volatile</code>也会被忽略；</li>
+<li>当<code>expr</code>是数组或者函数指针时，如果<code>ParamType</code>不是引用，推导出的<code>T</code>是指针类型，如果<code>ParamType</code>是引用，推导出的<code>T</code>是数组类型（比如<code>char[5]</code>）或函数引用（比如<code>void (&)(int)</code>）</li>
+</ul>
+<p>简而言之，只有一种情况下，<code>T</code>会被推导为左值引用类型（例如<code>int&</code>），那就是当<code>ParamType</code>是通用引用并且<code>expr</code>是左值的时候。</p>
+<h2 id=decltype-3><code>decltype</code> #3</h2>
+<p><code>decltype</code>在大多数情况下返回表达式的确切类型，包含引用类型和<code>const volaitle</code>。</p>
+<p>在C++14中，<code>decltype(auto)</code>可以自动推导函数的返回类型。</p>
+<p>注意一点，对于类型为<code>T</code>的变量名，<code>decltype</code>会返回<code>T</code>，但对于具有类型<code>T</code>的<strong>左值</strong>表达式，<code>decltype</code>会返回引用类型<code>T&</code>，例如<code>int x = 0;</code>，<code>decltype((x))</code>会返回<code>int&</code></p>
+<h2 id=auto-5-6><code>auto</code> #5 #6</h2>
+<p>使用<code>auto</code>自动推导类型可以减少录入，规避一些为妙的类型问题，减少重构的代价。在C++14中，<code>auto</code>可以用在lambda表达式的参数列表中。</p>
+<p>使用<code>auto</code>声明变量时要注意一些使用了Proxy设计模式的接口，它们返回的并不是真正需要的对象。这时可以使用<code>static_cast</code>做类型转换，例如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>auto</span> x <span style=color:#f92672>=</span> <span style=color:#66d9ef>static_cast</span><span style=color:#f92672>&lt;</span>type_you_want<span style=color:#f92672>&gt;</span>(proxy_expr);
+</code></pre></div><h2 id=统一初始化花括号初始化-7>统一初始化（花括号初始化） #7</h2>
+<p>初始化有以下几种方式：</p>
+<ul>
+<li>等号初始化，<code>int y = 0;</code>。不可拷贝的对象无法使用等号初始化，如<code>std::atomic&lt;int> x = 0;</code>是<strong>错误</strong>的；</li>
+<li>括号初始化，<code>int y(0);</code>。无法用于指定成员变量的默认值；</li>
+<li>统一初始化（花括号初始化、花括号与等号共用），<code>int y { 0 };</code>。任何情况下都能使用。</li>
+</ul>
+<p>当类的构造函数中有<code>initializer_list&lt;T></code>的重载时，编译器会<strong>强烈</strong>地选择这个重载，无论是否有更好的其它构造函数可以匹配参数。注意以下两个语句的区别：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span><span style=color:#f92672>&gt;</span> x1(<span style=color:#ae81ff>10</span>, <span style=color:#ae81ff>20</span>);
+std<span style=color:#f92672>::</span>vector<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span><span style=color:#f92672>&gt;</span> x2{<span style=color:#ae81ff>10</span>, <span style=color:#ae81ff>20</span>};
+</code></pre></div><p>编写模板类时，必须在这两种构造方式中做出抉择。</p>
+<p>使用空的初始化列表会调用默认构函数，如<code>Widget w{};</code>，这里不能使用括号初始化（<code>Widget w();</code>），因为编译器会倾向于将语句解释为函数声明，这是C++的“most vexing parse”问题。如果想选用<code>initializer_list</code>的构造函数，可以使用<code>Widget w{{}};</code></p>
+<p>另外，<code>auto</code>在推导<code>initializer_list&lt;T></code>时可以进行两部推导，即<code>auto x = { 1, 2 };</code>可以直接推导为<code>initializer_list&lt;int></code>，但对于摸板函数的类型推导，C++标准规定不允许从初始化列表直接推导为<code>initializer_list&lt;T></code>，需要这样做时，摸板函数应声明为：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+<span style=color:#66d9ef>void</span> func(<span style=color:#66d9ef>const</span> initializer_list<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&amp;</span> il);
+</code></pre></div><p>当用等号初始化和括号初始化对象时，两者有区别（#42）：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>std<span style=color:#f92672>::</span>regex r1 <span style=color:#f92672>=</span> <span style=color:#66d9ef>nullptr</span>;       <span style=color:#75715e>// copy initialization
+</span><span style=color:#75715e></span>std<span style=color:#f92672>::</span>regex r2(<span style=color:#66d9ef>nullptr</span>);        <span style=color:#75715e>// direct initialization
+</span></code></pre></div><p>C++标准规定拷贝初始化不允许使用<code>explicit</code>声明的构造函数，直接初始化可以。</p>
+<h2 id=nullptr-8><code>nullptr</code> #8</h2>
+<p><code>nullptr</code>比<code>NULL</code>好的地方在于避免重载的歧义，例如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>void</span> <span style=color:#a6e22e>f</span>(<span style=color:#66d9ef>int</span>);
+<span style=color:#66d9ef>void</span> <span style=color:#a6e22e>f</span>(<span style=color:#66d9ef>void</span> <span style=color:#f92672>*</span>);
+
+f(NULL);    <span style=color:#75715e>//可能无法编译，或者选用f(int)
+</span><span style=color:#75715e></span>f(<span style=color:#66d9ef>nullptr</span>); <span style=color:#75715e>//ok，选用f(void *)
+</span></code></pre></div><h2 id=使用using同义声明-9>使用<code>using</code>同义声明 #9</h2>
+<p>使用<code>using</code>定义变量替代<code>typedef</code>，好处有：</p>
+<ul>
+<li><code>using</code>支持模板声明，如：</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+<span style=color:#66d9ef>using</span> MyAllocList <span style=color:#f92672>=</span> std<span style=color:#f92672>::</span>list<span style=color:#f92672>&lt;</span>T, MyAlloc<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&gt;</span>;
+</code></pre></div><ul>
+<li>在模板中使用<code>using</code>定义的类型时，前面可以不用加<code>typename</code>关键字，因为编译器知道使用<code>using</code>声明的一定是类型。</li>
+</ul>
+<p>在<code>&lt;type_traits></code>中定义的一些用于类型操作的方法中，C++11版本仍在使用<code>typedef</code>，C++14加入了<code>using</code>的版本，如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>std<span style=color:#f92672>::</span>remove_const<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;::</span>type <span style=color:#75715e>//C++11
+</span><span style=color:#75715e></span>std<span style=color:#f92672>::</span>remove_const_t<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;</span>     <span style=color:#75715e>//C++14
+</span></code></pre></div><h2 id=枚举类-10>枚举类 #10</h2>
+<p>使用<code>enum class</code>声明的枚举值在使用时需要加上名字空间，如<code>enum class Color { black, red }; auto c = Color::red;</code></p>
+<p>使用<code>enum class</code>声明的枚举值不会自动转型成基本类型（<code>int</code>、<code>double</code>等），需要时必须显式转型。</p>
+<p>旧式的<code>enum</code>和<code>enum class</code>都有其内部的表达类型，<code>enum class</code>默认使用<code>int</code>，两者都可以指定内部类型：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>enum</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Status</span> <span style=color:#f92672>:</span> std<span style=color:#f92672>::</span><span style=color:#66d9ef>uint32_t</span>;
+<span style=color:#66d9ef>enum</span> <span style=color:#a6e22e>Color</span> <span style=color:#f92672>:</span> std<span style=color:#f92672>::</span><span style=color:#66d9ef>uint8_t</span>;
+</code></pre></div><p>指定内部类型后，两者都支持前向声明。使用<code>&lt;type_traits></code>中的<code>std::underlying_type&lt;E>::type</code>可以得到枚举类的内部类型。</p>
+<h2 id=delete-11><code>delete</code> #11</h2>
+<p><code>delete</code>不仅可用在成员函数上，也可以用在任何函数上，甚至是特例化的模板函数，如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+<span style=color:#66d9ef>void</span> func(T t);
+
+<span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;&gt;</span>
+<span style=color:#66d9ef>void</span> func<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>int</span><span style=color:#f92672>&gt;</span>(<span style=color:#66d9ef>int</span> t) <span style=color:#f92672>=</span> <span style=color:#66d9ef>delete</span>;
+</code></pre></div><h2 id=新的函数声明修饰符-12-14>新的函数声明修饰符 #12 #14</h2>
+<p>C++11新增了如下函数声明标识符：</p>
+<ul>
+<li><code>&</code>和<code>&&</code>，用于成员函数，可区分重载，当<code>*this</code>是左值或右值时选用；</li>
+<li><code>override</code>，显示告诉编译器覆盖了父类方法。因为子类的函数要覆盖父类函数需要满足许多条件，很容易就会写出自以为覆盖了父类函数其实并没有的代码，使用<code>override</code>关键字可以让编译器帮助差错；</li>
+<li><code>final</code>，用于类声明或函数声明，表示该类不能被继承或函数不能被覆盖；</li>
+<li><code>noexcept</code>，声明函数不会抛出异常。C++11认为一个函数关于异常真正有用的信息是“它是否会抛出异常”。有许多函数在设计时要求被调用者不能抛出异常，如<code>std::vector::push_back</code>，仅当容器中的类的移动构造函数声明为<code>noexcept</code>时才会选用移动构造，否则为了异常安全，会选用拷贝构造。STL中的许多方法都需要这个属性。析构函数会默认为<code>noexcept</code>。标识了<code>noexcept</code>的函数如果抛出了异常会终止程序运行。</li>
+</ul>
+<h2 id=特殊函数生成规则-17>特殊函数生成规则 #17</h2>
+<p>Big 5的原则：如果拷贝操作、移动操作、析构函数中有任一用户自定义的行为，那么编译器就不应该假设其自动生成的bitwise操作是正确的。C++11按照这个原则设计移动操作，但拷贝操作在C++98定制标准时原则还不明确，所以其行为与原则有差别。</p>
+<ul>
+<li>默认构造函数：用户没有自定义默认构造函数时，编译器会自动生成；</li>
+<li>析构函数：用户没有自定义默认析构函数时，编译器会自动生成；自带<code>noexcept</code>属性，默认<strong>非</strong><code>virtual</code>;</li>
+<li>拷贝构造函数：用户没有自定义拷贝构造函数和移动操作函数时，编译器会自动生成；拷贝赋值与用户自定义析构函数对拷贝构造函数的自动生成没有影响，但被标记为过时；</li>
+<li>拷贝赋值函数：用户没有自定义拷贝赋值函数和移动操作函数时，编译器会自动生成；拷贝构造与用户自定义析构函数对拷贝赋值函数的自动生成没有影响，但被标记为过时；</li>
+<li>移动构造函数和移动赋值函数：仅当用户没有自定义任何拷贝操作、移动操作和析构函数时，编译器会自动生成；</li>
+<li>成员函数模板对特殊函数的生成没有任何影响。</li>
+</ul>
+<h2 id=智能指针-18-22>智能指针 #18-#22</h2>
+<ol>
+<li><code>std::unique_ptr</code>在性能方面都与裸指针一样。当使用默认的删除器（<code>delete</code>）或者lambda表达式作为删除器时，<code>std::unique_ptr</code>的大小不会改变，因为删除器是<code>std::unique_ptr</code>类型信息的一部分。使用函数指针或函数对象会增加其大小；</li>
+<li><code>std::unique_ptr</code>有专门为数组的特例化：<code>std::unique_ptr&lt;T[]></code>，数组版本不支持指针操作<code>operator*</code>和<code>operator-></code>，但支持索引操作<code>operator[]</code>（普通版本不支持索引操作）；</li>
+<li><code>std::shared_ptr</code>和<code>std::weak_ptr</code>通常占用两个指针的大小，一个指向数据，一个指向控制块。控制块包含对象引用计数和弱引用计数，当对象引用计数为0时，对象被析构，内存被回收（如果不是通过<code>std::make_shared</code>创建的话），当对象引用计数和弱引用计数都为0时，控制块内存被回收。所有引用计数的操作为原子操作，因此性能会受到影响。控制块中还存放自定义的分配器（通过<code>std::allocate_shared</code>）和删除器。<code>std::shared_ptr</code>的删除器是通过构造函数指定，不包含在模板类型信息中。</li>
+<li>在成员函数中如果需要获得对自身的<code>std::shared_ptr</code>，类，需要继承自<code>std::enable_shared_from_this&lt;T></code>，然后调用<code>shared_from_this()</code>。调用函数前该实例的控制块必须已经存在，即之前创建过<code>std::shared_ptr</code>的实例，否则会抛出异常；</li>
+<li>使用<code>pImpl</code>模式时，如果使用<code>std::unique_ptr</code>管理资源，由于删除器是<code>std::unique_ptr</code>类型的一部分，实现需要完整的类型，因此需要在头文件中声明Big 5，然后在实现文件中定义它们；如果使用<code>std::shared_ptr</code>，则不需要；</li>
+<li>以下情况慎用或不能使用<code>make_xxx</code>系列函数：
+<ul>
+<li>需要自定义删除器时；</li>
+<li>需要使用<code>std::initializer_list</code>构造对象时；</li>
+<li>类自定义了<code>operator new</code>和<code>operator delete</code>时；</li>
+<li>对象本身占用很大空间且弱引用会存在很长时间时（由于控制块和对象一起分配导致对象的内存空间生存期与控制块生存期相同）。</li>
+</ul>
+</li>
+</ol>
+<h2 id=移动语义和完美转发-23-30>移动语义和完美转发 #23-#30</h2>
+<p><code>std::move</code>的简单实现，C++14版本：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+<span style=color:#66d9ef>decltype</span>(<span style=color:#66d9ef>auto</span>) move(T<span style=color:#f92672>&amp;&amp;</span> param) {
+    <span style=color:#66d9ef>using</span> ReturnType <span style=color:#f92672>=</span> remove_reference_t<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&amp;&amp;</span>;
+    <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>static_cast</span><span style=color:#f92672>&lt;</span>ReturnType<span style=color:#f92672>&gt;</span>(param);
+}
+</code></pre></div><p><code>std::forward</code>的简单实现，C++14版本：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span><span style=color:#66d9ef>typename</span> T<span style=color:#f92672>&gt;</span>
+T<span style=color:#f92672>&amp;&amp;</span> forward(remove_reference_t<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&amp;</span> param) {
+    <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>static_cast</span><span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&amp;&amp;&gt;</span>(param);
+}
+</code></pre></div><p><code>std::move</code>总是返回<code>param</code>的右值引用，<code>std::forward</code>保持<code>param</code>的左右性，如果<code>param</code>是左值，返回左值引用，如果<code>param</code>是右值，返回右值引用。</p>
+<p>编程建议：</p>
+<ul>
+<li>在右值引用的变量上调用<code>std::move</code>；</li>
+<li>在通用引用（模板中）的变量上调用<code>std::forward</code>；</li>
+<li>必须在确保变量不会继续使用时才能应用上述两条，防止对象被意外的移动掉。</li>
+</ul>
+<p>以下几种情况下完美转发<code>std::forward</code>可能失败：</p>
+<ul>
+<li>使用花括号初始化；</li>
+<li>使用<code>NULL</code>或是<code>0</code>表示空指针，会与整型重载冲突。应换用<code>nullptr</code>；</li>
+<li>传入仅声明而没有定义的<code>static const</code>变量时。因为完美转发转发的是引用，需要取变量地址，没有定义的变量没有地址，因此链接时会出错。需要定义该变量；</li>
+<li>传入重载函数时，因为并不知道究竟需要哪个函数，会产生歧义。需要明确指定传入函数的签名；</li>
+<li>使用位域（Bitfield）时。C++明确规定，非<code>const</code>引用不可绑定位域。即使参数为<code>const</code>引用，也是将位域所在的整型复制后绑定到引用上。因此解决办法就是先拷贝出一个变量，然后调用。</li>
+</ul>
+<h4 id=引用规约reference-collapsing>引用规约（reference collapsing）</h4>
+<p>引用规约的规则：只要规约的引用中有左值引用，结果为左值引用；仅当所有的引用都为右值引用，结果才是右值引用。</p>
+<p>以下情况下可能发生引用规约：</p>
+<ul>
+<li>模板参数实例化时；</li>
+<li>使用<code>auto</code>推导变量类型时；</li>
+<li>模板中使用<code>typedef</code>定义类型时；</li>
+<li>使用<code>decltype</code>时。</li>
+</ul>
+<p>**通用引用的新定义：**通用引用实际上是以下两个条件都被满足的上下文中的右值引用：</p>
+<ul>
+<li>类型推导区分左值和右值，类型<code>T</code>的左值被推导为<code>T&</code>，类型<code>T</code>的右值被推导为<code>T</code>；</li>
+<li>发生了引用规约。</li>
+</ul>
+<h4 id=通用引用与重载>通用引用与重载</h4>
+<p>当通用引用与重载一起使用时，会出现麻烦的事情，因为编译器倾向于使用模板产生一个完美匹配的重载，而不是通过类型转换去匹配另一个重载。可能遇到的情况有：</p>
+<ul>
+<li>数值类型不会转换（例如从<code>short</code>提升到<code>int</code>），而是从模板中直接生成完美匹配；</li>
+<li>使用非<code>const</code>对象调用拷贝构造时，不会选用拷贝构造，因为从模板生成的<strong>非</strong><code>const</code>构造更加匹配；</li>
+<li>子类调用父类的构造函数时，会使用从模板生成的构造函数，因为类型更加匹配。</li>
+</ul>
+<p>解决办法有以下几种：</p>
+<ul>
+<li>不使用重载，使用不同的函数名。构造函数的重载不适用这条；</li>
+<li>使用<code>const T&</code>传递变量。无法享受通用引用带来的性能优势（移动操作、字面量字符串直接构造避免创建临时<code>std::string</code>等等）；</li>
+<li>使用<strong>Tag dispatch</strong>。重载选择基于所有函数参数和实参的匹配结果，因此可以配合另一个参数进行重载选择，如<code>std::true_type</code>和<code>std::false_type</code>，这些参数只用于重载的类型匹配，不需要变量名，也不参与代码，因此称为<strong>Tag</strong>；</li>
+<li>使用<code>std::enable_if</code>约束模板。编译器的SFINAE特性，匹配失败并不是一种错误(Substitution Failure Is Not An Error)。如解决上述3个问题的代码：</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Person</span> {
+<span style=color:#66d9ef>public</span><span style=color:#f92672>:</span>
+    <span style=color:#66d9ef>template</span><span style=color:#f92672>&lt;</span>
+        <span style=color:#66d9ef>typename</span> T,
+        <span style=color:#66d9ef>typename</span> <span style=color:#f92672>=</span> std<span style=color:#f92672>::</span>enable_if_t<span style=color:#f92672>&lt;</span>
+        <span style=color:#f92672>!</span>std<span style=color:#f92672>::</span>is_base_of<span style=color:#f92672>&lt;</span>Person, std<span style=color:#f92672>::</span>decay_t<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&gt;::</span>value
+        <span style=color:#f92672>&amp;&amp;</span>
+        <span style=color:#f92672>!</span>std<span style=color:#f92672>::</span>is_integral<span style=color:#f92672>&lt;</span>std<span style=color:#f92672>::</span>remove_reference_t<span style=color:#f92672>&lt;</span>T<span style=color:#f92672>&gt;&gt;::</span>value
+        <span style=color:#f92672>&gt;</span>
+    <span style=color:#f92672>&gt;</span>
+    <span style=color:#66d9ef>explicit</span> Person(T<span style=color:#f92672>&amp;&amp;</span> n);
+
+    <span style=color:#66d9ef>explicit</span> <span style=color:#a6e22e>Person</span>(<span style=color:#66d9ef>int</span> idx);
+
+};
+</code></pre></div><p>这类代码如果出错，编译器会报出一大堆错误，找不着北，可以使用<code>static_assert</code>自行定位错误：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>    <span style=color:#66d9ef>static_assert</span>(
+        std<span style=color:#f92672>::</span>is_constructible<span style=color:#f92672>&lt;</span>std<span style=color:#f92672>::</span>string, T<span style=color:#f92672>&gt;::</span>value,
+        <span style=color:#e6db74>&#34;Parameter n can&#39;t be used to construct a std::string&#34;</span>
+    );
+</code></pre></div><h2 id=lambda表达式-31-34>lambda表达式 #31-#34</h2>
+<p>每个lambda表达式会生成一个lambda表达式类，闭包（closure）是lambda表达式类的实例。</p>
+<p>lambda表达式捕获的主意事项：</p>
+<ul>
+<li>默认的捕获会捕获<code>this</code>指针，有造成悬空指针的危险；</li>
+<li>不能捕获静态生存周期的变量，如用<code>static</code>声明的变量。</li>
+</ul>
+<p>C++14起支持初始化捕获，例如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>[pw <span style=color:#f92672>=</span> std<span style=color:#f92672>::</span>move(pw)]() {
+	...
+}
+</code></pre></div><p>使用初始化捕获可以将对象移动到闭包中。C++11不支持初始化捕获，要移动参数，需要使用<code>std::bind()</code>模拟。</p>
+<p>C++14起支持泛lambda（generic lambda），可以在参数类型中使用<code>auto</code>，内部使用模板实现。当需要完美转发参数时，在变量名上使用<code>decltype</code>推导变量类型，如：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>auto</span> f <span style=color:#f92672>=</span> [] (<span style=color:#66d9ef>auto</span><span style=color:#f92672>&amp;&amp;</span> param) {
+	<span style=color:#66d9ef>return</span> <span style=color:#a6e22e>func</span>(std<span style=color:#f92672>::</span>forward<span style=color:#f92672>&lt;</span><span style=color:#66d9ef>decltype</span>(param)<span style=color:#f92672>&gt;</span>(param));
+};
+</code></pre></div><h2 id=并发编程-35-40>并发编程 #35-#40</h2>
+<h4 id=stdasync><code>std::async()</code></h4>
+<p><code>std::async()</code>提供基于任务的并发编程模型。内置实现的调度器可以解决手写<code>std::thread</code>导致的线程过多、频繁上下文切换、（手写调度器时）平台移植等问题，还可以从返回的<code>std::future</code>获得返回值或发生的异常。当需要使用更加底层的API（如CPU亲和度、优先级）时，则只能使用<code>std::thread</code>。</p>
+<p><code>std::async()</code>的调度有两种模式，一种是并发运行（<code>std::launch::async</code>），一直是延后运行(<code>std::launch::deferred</code>)。指定为延后运行时，执行体会在调用<code>std::future::get()</code>时才在调用者的线程运行。默认值为两者都指定（<code>std::launch::async | std::launch::deferred</code>），由调度器根据运行时的负载决定使用哪种策略。这一随机特性使得只有满足以下条件时才能使用默认的调度策略，否则应该指定调度策略：</p>
+<ul>
+<li>任务不需要与调用<code>get</code>或<code>wait</code>的线程并发运行；</li>
+<li>并不需要读写指定线程的<code>thread_local</code>变量；</li>
+<li>除非能保证在<code>std::async()</code>返回的<code>std::future</code>上调用<code>get()</code>或<code>wait()</code>，否则任务不一定会运行（负载高时调度器选择<code>deferred</code>策略）；</li>
+<li>当调用<code>wait_for()</code>或者<code>wait_until()</code>函数时，要考虑到<code>std::future_status::deferred</code>状态。</li>
+</ul>
+<h4 id=stdthread><code>std::thread</code></h4>
+<p><code>std::thread</code>在销毁时，必须处于不可连接状态（unjoinable），即与底层的线程实现分离，有以下几种方式可让<code>std::thread</code>处于不可连接状态：</p>
+<ul>
+<li>默认构造的<code>std::thread</code>；</li>
+<li>被移动掉的<code>std::thread</code>；</li>
+<li>已经调用过<code>join()</code>的<code>std::thread</code>；</li>
+<li>已经调用过<code>detach()</code>的<code>std::thread</code>。</li>
+</ul>
+<h4 id=stdfuture><code>std::future</code></h4>
+<p><code>std::future</code>只可被移动，不能被拷贝，且只能调用一次<code>get()</code>，再次调用会出错，通过调用<code>std::future::share()</code>可以创建<code>std::shared_future</code>，它可以被拷贝，且可以调用多次<code>get()</code>，可以在多个线程间分享，通过独立的<code>std::shared_future</code>对对象的访问是线程安全的。</p>
+<p><code>std::promise</code>也可以创建<code>std::future</code>，两者通过一个在堆上分配的shared state通信，同时包含引用计数。</p>
+<p><code>std::future</code>的析构函数通常仅销毁其成员变量，但是当<code>std::future</code>是通过<code>std::async()</code>以<code>async</code>策略调度运行（从而会创建新线程）所创建的最后一个指向shared state的<code>future</code>时，会阻塞直到任务完成（在线程上调用了<code>join()</code>）。</p>
+<p><code>std::future&lt;void></code>可以用来进行线程间的一次性通信。</p>
+<h4 id=volatile><code>volatile</code></h4>
+<p><code>volatile</code>关键字用于禁止编译器对特定内存位置的优化。例如这样的代码：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>auto</span> y <span style=color:#f92672>=</span> x;
+y <span style=color:#f92672>=</span> x;       <span style=color:#75715e>// redundant loads
+</span><span style=color:#75715e></span>x <span style=color:#f92672>=</span> <span style=color:#ae81ff>10</span>;
+x <span style=color:#f92672>=</span> <span style=color:#ae81ff>20</span>;      <span style=color:#75715e>// dead stores
+</span></code></pre></div><p>很有可能被编译器优化为：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp><span style=color:#66d9ef>auto</span> y <span style=color:#f92672>=</span> x;
+x <span style=color:#f92672>=</span> <span style=color:#ae81ff>20</span>;
+</code></pre></div><p>使用<code>volatile</code>可以禁用这样的优化。</p>
+<h2 id=emplace系列函数-42><code>emplace</code>系列函数 #42</h2>
+<p><code>emplace</code>系列函数的性能不是一定比<code>push</code>、<code>insert</code>系列好。满足以下几个条件时基本可以认为<code>emplace</code>的性能更好：</p>
+<ul>
+<li>要插入的值是被构造进容器，而不是通过赋值（<code>operator=</code>）进容器的（例如插入到<code>vector</code>的队首时）；</li>
+<li>传递参数的类型与容器的类型不同（因此通过<code>push</code>和<code>insert</code>函数插入时需要先构造临时变量）；</li>
+<li>容器不太会因为值重复而拒绝插入新的值。</li>
+</ul>
+<p>在向容器插入资源管理对象（如<code>std::shared_ptr</code>）时，一定要先创建好资源管理对象。当使用<code>emplace</code>系列函数时，获取资源与创建资源管理对象之间有间隔，一但发生了异常（如<code>vector</code>重新调整缓冲大小时内存不够），资源可能会泄露，如以下代码具有潜在的资源泄露风险：</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-cpp data-lang=cpp>std<span style=color:#f92672>::</span>list<span style=color:#f92672>&lt;</span>std<span style=color:#f92672>::</span>shared_ptr<span style=color:#f92672>&lt;</span>Widget<span style=color:#f92672>&gt;&gt;</span> ptrs;
+ptrs.emplace_back(<span style=color:#66d9ef>new</span> Widget, killWidget);
+</code></pre></div><p>当使用<code>emplace</code>系列函数时，要注意因为参数是完美转发到构造函数，因此使用的是直接初始化，允许使用<code>explicit</code>声明的构造函数，这种情况在使用<code>push</code>和<code>insert</code>系列函数时不会发生，因为编译器不允许<code>explicit</code>构造函数隐式创建临时变量。</p>
+</div>
+</div>
+<div id=post-footer class="post-footer main-content-wrap">
+<div class=post-footer-tags>
+<span class="text-color-light text-small">标签</span><br>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/c++/>C++</a>
+</div>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2017/09/bash-concept-and-syntax/ data-tooltip=BASH概念和常见语法 aria-label="下一篇: BASH概念和常见语法">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2016/05/memory-model/ data-tooltip="What the HELL is MEMORY MODEL" aria-label="上一篇: What the HELL is MEMORY MODEL">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
+<i class="fa fa-comment"></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+<div id=gitalk>
+<noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript>
+</div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('gitalk').innerHTML='Gitalk comments not available by default when the website is previewed locally.';return}new Gitalk({clientID:'2d9c9d837f8496107211',clientSecret:'5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2',repo:'core2duoe6420.github.io',owner:'core2duoe6420',admin:['core2duoe6420'],id:'42346ae7c96ae363b2f41dc1b8aaabc1',...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render('gitalk')})()</script>
+</div>
+</article>
+<footer id=footer class=main-content-wrap>
+<span class=copyrights>
+&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
+</span>
+</footer>
+</div>
+<div id=bottom-bar class=post-bottom-bar data-behavior=4>
+<div class=post-actions-wrap>
+<nav>
+<ul class="post-actions post-action-nav">
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2017/09/bash-concept-and-syntax/ data-tooltip=BASH概念和常见语法 aria-label="下一篇: BASH概念和常见语法">
+<i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2016/05/memory-model/ data-tooltip="What the HELL is MEMORY MODEL" aria-label="上一篇: What the HELL is MEMORY MODEL">
+<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i>
+</a>
+</li>
+</ul>
+</nav>
+<ul class="post-actions post-action-share">
+<li class="post-action hide-lg hide-md hide-sm">
+<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
+<i class="fa fa-share-alt" aria-hidden=true></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
+<i class="fa fa-comment"></i>
+</a>
+</li>
+<li class=post-action>
+<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
+<i class="fa fa-arrow-up" aria-hidden=true></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id=about>
+<div id=about-card>
+<div id=about-btn-close>
+<i class="fa fa-times"></i>
+</div>
+<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
+<h4 id=about-card-name>Alex King</h4>
+<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
+<div id=about-card-job>
+<i class="fa fa-briefcase"></i>
+<br>
+Human
+</div>
+<div id=about-card-location>
+<i class="fa fa-map-marker-alt"></i>
+<br>
+Shanghai
+</div>
+</div>
+</div>
+<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
+</body>
+</html>
