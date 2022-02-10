@@ -1,22 +1,22 @@
 <!doctype html><html lang=zh-cn>
 <head>
-<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"启用Docker Daemon的TLS连接","datePublished":"2022-02-10T00:00:00Z","dateModified":"2022-02-10T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/02\/docker-daemon-tls\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。\n","keywords":[]}</script>
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"启用Docker Daemon的TLS连接","datePublished":"2022-02-10T00:00:00Z","dateModified":"2022-02-10T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/02\/docker-daemon-tls\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。\n","keywords":[]}</script>
 <meta charset=utf-8>
 <meta name=viewport content="width=device-width,initial-scale=1">
 <meta http-equiv=x-ua-compatible content="IE=edge">
 <meta name=generator content="Hugo 0.92.1 with theme Tranquilpeak 0.5.3-BETA">
 <meta name=author content="Alex King">
 <meta name=keywords content>
-<meta name=description content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
-<meta property="og:description" content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
+<meta name=description content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
+<meta property="og:description" content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="启用Docker Daemon的TLS连接">
 <meta name=twitter:title content="启用Docker Daemon的TLS连接">
 <meta property="og:url" content="https://blog.hljin.net/2022/02/docker-daemon-tls/">
 <meta property="twitter:url" content="https://blog.hljin.net/2022/02/docker-daemon-tls/">
 <meta property="og:site_name" content="Alex King's blog">
-<meta property="og:description" content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
-<meta name=twitter:description content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
+<meta property="og:description" content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
+<meta name=twitter:description content="背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。">
 <meta property="og:locale" content="zh-cn">
 <meta property="article:published_time" content="2022-02-10T00:00:00">
 <meta property="article:modified_time" content="2022-02-10T00:00:00">
@@ -111,7 +111,7 @@
 </div>
 <div class="post-content markdown">
 <div class=main-content-wrap>
-<p>背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬件。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。</p>
+<p>背景介绍：因为NAS使用的CPU Xeon W-2140B没带集显，主板集成的显卡ASPEED性能可以忽略，因此没法在jellyfin里使用硬解。虽然测试了一下，靠CPU软解可以支持一路4K到4K重编码流畅观看，但此时CPU使用率已经接近100%。于是还是决定把jellykin放到装有Core i3 8100T的ESXi虚拟出的Ubuntu上。为了方便管理两台机器上的Docker，想让运行在NAS上的Portainer连接到新的Docker Daemon上。</p>
 <p>实际上，Docker于18.09版本开始已经支持SSH连接，奈何<a href=https://github.com/portainer/portainer/issues/431#issuecomment-820835339>Portainer明确表示不会支持</a>，还是只能用TCP+TLS保护的连接方式。配置本身不算复杂，本文就是做个简单的记录。先放出参考资料：</p>
 <ul>
 <li>Docker文档：Protect the Docker daemon socket <a href=https://docs.docker.com/engine/security/protect-access/>https://docs.docker.com/engine/security/protect-access/</a></li>
