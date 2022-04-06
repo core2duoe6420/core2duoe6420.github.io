@@ -1,482 +1,188 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"交叉编译ARM Native GCC","datePublished":"2014-09-10T00:00:00Z","dateModified":"2014-09-10T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2014\/09\/cross-compile-arm-natvie-gcc\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。\n","keywords":[]}</script>
-<meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<meta http-equiv=x-ua-compatible content="IE=edge">
-<meta name=generator content="Hugo 0.92.2 with theme Tranquilpeak 0.5.3-BETA">
-<meta name=author content="Alex King">
-<meta name=keywords content>
-<meta name=description content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。">
-<meta property="og:description" content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="交叉编译ARM Native GCC">
-<meta name=twitter:title content="交叉编译ARM Native GCC">
-<meta property="og:url" content="https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/">
-<meta property="twitter:url" content="https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/">
-<meta property="og:site_name" content="Alex King's blog">
-<meta property="og:description" content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。">
-<meta name=twitter:description content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。">
-<meta property="og:locale" content="zh-cn">
-<meta property="article:published_time" content="2014-09-10T00:00:00">
-<meta property="article:modified_time" content="2014-09-10T00:00:00">
-<meta name=twitter:card content="summary">
-<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
-<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
-<title>交叉编译ARM Native GCC</title>
-<link rel=icon href=https://blog.hljin.net/favicon.png>
-<link rel=canonical href=https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
-<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
-</head>
-<body>
-<div id=blog>
-<header id=header data-behavior=4>
-<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
-<div class=header-title>
-<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
-</div>
-<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
-<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-</a>
-</header>
-<nav id=sidebar data-behavior=4>
-<div class=sidebar-container>
-<div class=sidebar-profile>
-<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
-<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-</a>
-<h4 class=sidebar-profile-name>Alex King</h4>
-<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
-</div>
-<ul class=sidebar-buttons>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
-<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
-<span class=sidebar-button-desc>首页</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
-<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
-<span class=sidebar-button-desc>分类</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
-<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
-<span class=sidebar-button-desc>标签</span>
-</a>
-</li>
-</ul>
-<ul class=sidebar-buttons>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
-<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
-<span class=sidebar-button-desc>归档</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
-<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
-<span class=sidebar-button-desc>关于</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
-<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
-<span class=sidebar-button-desc>GitHub</span>
-</a>
-</li>
-</ul>
-<ul class=sidebar-buttons>
-</ul>
-</div>
-</nav>
-<div id=main data-behavior=4 class=hasCoverMetaIn>
-<article class=post id=top>
-<div class="post-header main-content-wrap text-left">
-<h1 class=post-title>
-交叉编译ARM Native GCC
-</h1>
-<div class="postShorten-meta post-meta">
-<time datetime=2014-09-10T00:00:00Z>
-九月 10, 2014
-</time>
-</div>
-</div>
-<div class="post-content markdown">
-<div class=main-content-wrap>
-<p>前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。</p>
-<p>R6300v2配备了BCM4708，ARM cortex-a9双核800Mhz，最新的ddwrt的内核版本是3.10.25，可以说非常新了，于是就想能不能在路由器上面跑GCC，编译程序。在网上找了好久，能在路由器上直接运行的GCC找不到，能交叉编译出路由器能运行的程序的GCC倒是有，openwrt那边一大堆。我没有交叉编译的真实经历，但是寒假的时候看过一本《深度探索Linux操作系统 系统构建和原理解析》（以下简称《简析》），当初跟著书上的步骤一步步做下来的，虽然成功了但没怎么搞懂，于是萌发了自己从头构建一个能在路由器上运行的GCC的想法，就此开始了长达四天的折腾之旅。</p>
-<h2 id=环境>环境</h2>
-<p>宿主机：<code>Ubuntu 14.04 64位，gcc 4.8.2</code></p>
-<p>工具链版本：<code>binutils-2.24 gcc-4.9.1 glibc-2.19 linux-3.10.25</code>（因为我安装的ddwrt内核是3.10.25）</p>
-<p>编译gcc需要三个额外的库，gmp mpc mpfr，从网上下载后解压，把文件夹名从gmp-version mpc-version mpfr-version改为gmp mpc mpfr，然后放到gcc-4.9.1文件夹下，gcc较新版本可以正确处理这几个库的位置了，不用其他参数指定（gcc-4.7.4需要configure的时候指定<code>--with-mpfr-include</code>和<code>--with-mpfr-lib</code>，折腾的时候得到的教训）。</p>
-<p>首先交叉编译要确定目标机器的三元组，也就是arch-vendor-os，在Ubuntu中这个三元组是<code>x86_64-pc-linux-gnu</code>，而R6300v2上的三元组，经过一番折腾后最终我用的是<code>arm-ddwrt-linux-gnueabi</code>。这个三元组非常重要，因为事关C库的编译。网上经常能见到的有<code>arm-none-eabi</code>，这个表示没有操作系统，使用newlib作为C库，折腾的时候我也试过这个三元组，后来发现没有操作系统怎么可能是我要的。还有最后的<code>gnueabi</code>，这个还有变种<code>gnueabihf</code>，表示CPU有FPU，hf的意思据我推测应该是hard float，但是据说因为路由器不需要浮点运算，所以R6300v2把FPU阉割掉了-:(……最后还有一种也就是我网上找到的交叉编译器<code>arm-openwrt-linux-uclibcgnueabi</code>，其实是使用uclibc作为C库的编译器，ddwrt也自带了uclibc，所以用它编译的程序是可以在R6300v2上运行的。另外也可以看出vendor其实无所谓，随便取好了……</p>
-<p>全部源代码解压完后，需要对gcc做个patch。因为我的情况比较特殊，路由器上的/挂载位置是只读的，意味着我没法往常规目录/lib和/usr写入文件，况且路由器的内置容量也放不下gcc和glibc这样的庞然大物，好在R6300v2有USB接口，可以插上USB存储设备，我把U盘挂载在<code>/tmp/mnt/usb</code>下（因为/tmp是ramfs，可写），把glibc的链接文件都放在<code>/tmp/mnt/usb/lib</code>下，把/usr下的文件放到<code>/tmp/mnt/usb/usr</code>下。但是程序启动时操作系统加载的dynamic linker是gcc硬编码在代码里的，所以要修改dynamic linker的位置。</p>
-<p>关于dynamic linker，可以使用<code>readelf -l a.out</code>查看，输出中会有一句</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
-</code></pre></div><p>这是我在Ubuntu x86_64上的输出结果，而我的目标是</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>[Requesting program interpreter: /tmp/mnt/usb/lib/ld-linux.so.3]
-</code></pre></div><p>在gcc-4.9.1目录下执行以下代码，即可打上补丁，代码来自LFS的教程，我加了一项linux-eabi.h，因为我的目标是ARM而LFS的目标是x86。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>for file in $(find gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h -o -name linux-eabi.h)
-do
-    cp -uv $file{,.orig}
-    sed -e &#39;s@/lib\(64\)\?\(32\)\?/ld@/tmp/mnt/usb&amp;@g&#39; \
-    -e &#39;s@/usr@/tmp/mnt/usb@g&#39; $file.orig &gt; $file
-    echo &#39;
-#undef STANDARD_STARTFILE_PREFIX_1
-#undef STANDARD_STARTFILE_PREFIX_2
-#define STANDARD_STARTFILE_PREFIX_1 &#34;/tmp/mnt/usb/lib/&#34;
-#define STANDARD_STARTFILE_PREFIX_2 &#34;&#34;&#39; &gt;&gt; $file
-    touch $file.orig
-done
-</code></pre></div><h2 id=环境变量>环境变量</h2>
-<p>这些是我在命令中用到的环境变量，来源上面都说明过了。BUILD_DIR就是编译的工作目录。要说明的是CROSS_TOOL目录下放入的在x86上运行的交叉编译工具，而SYSROOT目录下放的是在R6300v2上运行的程序，包括最终生成gcc、glibc库和头文件。交叉工具链编译时的sysroot机制太复杂了，我也没有完全搞清……至于为什么是/vita，因为一开始我是跟着《简析》来做的，书里面用的是/vita。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>THREADS=2
-TARGET=arm-ddwrt-linux-gnueabi
-HOST=x86_64-pc-linux-gnu
-BUILD=$HOST
-INSTALL_ROOT=/vita
-SYSROOT=$INSTALL_ROOT/sysroot
-CROSS_TOOL=$INSTALL_ROOT/cross-tool
-HOST_ROOT_PREFIX=/tmp/mnt
-HOST_ROOT=$HOST_ROOT_PREFIX/usb
-BUILD_DIR=$INSTALL_ROOT/build
-</code></pre></div><h2 id=binutils-round-1>binutils round 1</h2>
-<p>交叉编译的第一步永远是binutils，目标是编译出在x86上运行的目标代码为arm的ld、as等。脚本：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd binutils-build
-../binutils-2.24/configure                          \
-    --prefix=$CROSS_TOOL                            \
-    --with-sysroot=$SYSROOT                         \
-    --target=$TARGET                                \
-    --disable-nls                                   \
-    --disable-libssp
-make -j $THREADS
-make install
-</code></pre></div><p>参数说明（所有的参数说明都是我根据自己的理解写的，不一定对，甚至错误的概率很高，好多我也只是根据网上抄的，但能用。）：</p>
-<ul>
-<li><code>--disable-nls</code>：nls的意思是Native Language Support，就是说编译期间只用英语提示。</li>
-<li><code>--disable-libssp</code>：ssp好像是栈保护什么的，我也不知道为什么要禁用，反正大家都禁用了……</li>
-</ul>
-<h2 id=gcc-round-1>gcc round 1</h2>
-<p>第一次编译gcc的目标是在没有C库的支持下编译出一个能用的最小功能的gcc，然后用它来编译glibc，关键的几个参数是<code>--without-headers</code>和<code>--with-newlib</code>，这两个参数告诉gcc用自带的头文件。脚本：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd ../gcc-build
-../gcc-4.9.1/configure                              \
-    --target=$TARGET                                \
-    --prefix=$CROSS_TOOL                            \
-    --with-sysroot=$SYSROOT                         \
-    --with-newlib                                   \
-    --without-headers                               \
-    --disable-nls                                   \
-    --disable-shared                                \
-    --disable-multilib                              \
-    --disable-decimal-float                         \
-    --disable-threads                               \
-    --disable-libatomic                             \
-    --disable-libgomp                               \
-    --disable-libitm                                \
-    --disable-libquadmath                           \
-    --disable-libsanitizer                          \
-    --disable-libssp                                \
-    --disable-libmudflap                            \
-    --disable-libvtv                                \
-    --disable-libcilkrts                            \
-    --disable-libstdc++-v3                          \
-    --enable-languages=c                            \
-    --with-float=soft                               \
-    --with-local-prefix=$HOST_ROOT/usr/local        \
-    --with-native-system-header-dir=$HOST_ROOT/usr/include
-make -j $THREADS
-make install
-</code></pre></div><p>参数说明：</p>
-<ul>
-<li><code>--target</code>：当target参数host参数不一样时，启用交叉编译。host没有指定时gcc会自动判断为当前的三元组。</li>
-<li><code>--prefix</code>：这个参数只影响最终gcc的安装位置。</li>
-<li><code>--disable-xxx</code>：第一次编译时禁用大部分的功能，因为没有C库编译不了。</li>
-<li><code>--with-float=soft</code>：gcc配置时的<code>--with-xxx</code>参数大多数是用来指明编译出来的gcc在编译其他程序时的默认选项，同样的还有<code>--with-cpu --with-arch</code>等，使用了这个参数，当用编译出来的gcc编译其他程序的时候，会自动带上<code>-msoft-float</code>（不知道理解的对不对，可以参考<a href=https://gcc.gnu.org/install/configure.html>Installing GCC: Configuration</a>和<a href=https://gcc.gnu.org/onlinedocs/gcc-4.5.3/gcc/ARM-Options.html>ARM Options</a>)。</li>
-<li><code>--with-local-prefix</code>：这个参数会把目录放到gcc默认的头文件搜索路径中，默认是<code>/usr/local</code>，参数中不需要<code>include</code>，但实际上是到<code>/usr/local/include</code>中找头文件的，这里之所以要改当然也是因为上一节中说明的问题。</li>
-<li><code>--with-native-system-header-dir</code>：这个参数在第一轮编译gcc时其实用不到，要第二轮开始才用。它配合<code>--with-sysroot</code>指定在<strong>编译期间</strong>以及编译出来的gcc查找头文件的位置，所以最终查找头文件的位置是<code>$SYSROOT/$HOST_ROOT/usr/include</code>。为此我们需要把linux内核头文件和glibc的头文件都安装到这个位置。</li>
-</ul>
-<h2 id=内核头文件>内核头文件</h2>
-<p>安装内核头文件比较简单，要注意的是ARCH参数，以及安装位置，这在上面介绍gcc参数时已经说过原因了。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd ../linux-3.0.25
-make mrproper
-make ARCH=arm INSTALL_HDR_PATH=$SYSROOT/$HOST_ROOT/usr headers_install
-</code></pre></div><h2 id=glibc>glibc</h2>
-<p>有了最初的gcc后，就可以用它来编译glibc了，glibc的配置中<code>--host</code>表明我们要生成在目标机器上运行的glibc，所以生成出来的glibc是不能在x86 Ubuntu上直接运行的。glibc也没有target的概念。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd ../glibc-build
-rm -rf *
-../glibc-2.19/configure                             \
-    --prefix=$HOST_ROOT                             \
-    --host=$TARGET                                  \
-    --disable-profile                               \
-    --enable-kernel=2.6.32                          \
-    --with-headers=$SYSROOT/$HOST_ROOT/usr/include  \
-    libc_cv_forced_unwind=yes                       \
-    libc_cv_ctors_header=yes                        \
-    libc_cv_c_cleanup=yes
-make -j $THREADS
-make install_root=$SYSROOT install
-</code></pre></div><p>参数说明：</p>
-<ul>
-<li><code>--prefix</code>：指定安装目录。glibc的安装脚本也会把这个参数写入库文件的依赖中，在目标系统上库文件会到相应目录查找动态库，所以这里没有直接加上$SYSROOT，而是在安装的时候才指定安装目录为$SYSROOT。</li>
-<li><code>--with-headers</code>：指定linux内核头文件目录，就是上一步中安装的位置。</li>
-<li><code>libc_cv_*</code>：这三个是用来欺骗glibc的，具体的请参考<a href=http://www.linuxfromscratch.org/lfs/view/development/chapter05/glibc.html>Linux From Scratch 5.7 Glibc-2.19</a>。</li>
-</ul>
-<p>glibc安装完成后，默认把头文件放在<code>$SYSROOT/$HOST_ROOT/include</code>下，根据上面说的，我们要把它移动到<code>$SYSROOT/$HOST_ROOT/usr/include</code>下：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cp -r $SYSROOT/$HOST_ROOT/include $SYSROOT/$HOST_ROOT/usr/
-</code></pre></div><h2 id=gcc-round-2>gcc round 2</h2>
-<p>有了glibc之后就可以重新编译gcc，并开启大部分功能了。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd ../gcc-build
-rm -rf *
-../gcc-4.9.1/configure                              \
-    --target=$TARGET                                \
-    --prefix=$CROSS_TOOL                            \
-    --with-sysroot=$SYSROOT                         \
-    --disable-nls                                   \
-    --enable-shared                                 \
-    --disable-multilib                              \
-    --enable-threads=posix                          \
-    --enable-languages=c,c++                        \
-    --disable-libssp                                \
-    --disable-decimal-float                         \
-    --disable-libgomp                               \
-    --with-float=soft                               \
-    --with-local-prefix=$HOST_ROOT/usr/local        \
-    --with-native-system-header-dir=$HOST_ROOT/usr/include
-make -j $THREADS
-make install
-</code></pre></div><p>参数说明：</p>
-<ul>
-<li><code>--disable-decimal-float</code>：一次编译时提示目标系统不支持decimal-float，所以把它禁掉。</li>
-<li><code>--disable-multilib --disable-libgomp</code>：这两个不加会导致编译出错（libiberty和zlib报错，具体原因也不清楚）。</li>
-<li><code>--with-native-system-header-dir</code>：这个参数现在起作用了。</li>
-</ul>
-<p>这一轮编译完后，作为交叉编译工具的gcc已经完成了，用它编译出来的二进制文件，应该可以正常在R6300v2上运行了（当然前提是glibc的库文件放在正确的位置，也就是<code>/tmp/mnt/usb/lib</code>下）。写一个hello world，用readelf读取下elf的头信息：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>vita@cc-virtual-machine:/vita$ arm-ddwrt-linux-gnueabi-gcc a.c
-vita@cc-virtual-machine:/vita$ ./a.out
--su: ./a.out: cannot execute binary file: Exec format error
-vita@cc-virtual-machine:/vita$ readelf -h a.out
-ELF Header:
-  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
-  Class:                             ELF32
-  Data:                              2&#39;s complement, little endian
-  Version:                           1 (current)
-  OS/ABI:                            UNIX - System V
-  ABI Version:                       0
-  Type:                              EXEC (Executable file)
-  Machine:                           ARM
-  Version:                           0x1
-  Entry point address:               0x82d0
-  Start of program headers:          52 (bytes into file)
-  Start of section headers:          4444 (bytes into file)
-  Flags:                             0x5000202, has entry point, Version5 EABI, soft-float ABI
-  Size of this header:               52 (bytes)
-  Size of program headers:           32 (bytes)
-  Number of program headers:         8
-  Size of section headers:           40 (bytes)
-  Number of section headers:         37
-  Section header string table index: 34
-</code></pre></div><h2 id=binutils-round-2>binutils round 2</h2>
-<p>第二轮编译binutils的目标就是编译出能在R6300v2上运行的ld和as这些程序。关键参数是<code>--host</code>，指定了该参数后makefile就会调用<code>$TARGET-gcc</code>，也就是<code>arm-ddwrt-linux-gnueabi-gcc</code>等一系列交叉编译工具来编译binutils，而不是Ubuntu自带的。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>cd ../binutils-build
-rm -rf *
-../binutils-2.24/configure                          \
-    --prefix=$SYSROOT/$HOST_ROOT/usr                \
-    --with-sysroot                                  \
-    --host=$TARGET                                  \
-    --disable-nls                                   \
-    --disable-libssp                                \
-    --disable-werror
-make -j $THREADS
-make install
-</code></pre></div><p>参数说明：</p>
-<ul>
-<li><code>--prefix</code>：因为要编译出在R6300v2上运行的binutils，所以安装到目标文件夹下。</li>
-<li><code>--disable-werror</code>：不加这个参数编译期间会因为将警告视为错误而终止。</li>
-</ul>
-<h2 id=gcc-round-3>gcc round 3</h2>
-<p>第三轮gcc目标当然是编译出能运行在R6300v2上的gcc编译器了。在编译开始前要先把<code>$SYSROOT/$HOST_ROOT/usr/include</code>下的文件拷贝到Ubuntu下的<code>$HOST_ROOT/usr/include</code>，也就是<code>/tmp/mnt/usb/usr/include</code>下，因为编译出的gcc要在R6300v2上运行，配置时的<code>--with-sysroot</code>参数不能想之前两轮那样设置为<code>$SYSROOT</code>了，而必须设置为<code>/</code>。所以头文件必须放到由<code>--with-native-system-header-dir</code>参数直接指定的目录下：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>rm -rf $HOST_ROOT_PREFIX
-mkdir -p $HOST_ROOT/usr
-cp -r $SYSROOT/$HOST_ROOT/usr/include $HOST_ROOT/usr
-
-cd ../gcc-build
-rm -rf *
-../gcc-4.9.1/configure                              \
-    --build=x86_64-pc-linux-gnu                     \
-    --target=$TARGET                                \
-    --host=$TARGET                                  \
-    --with-sysroot=/                                \
-    --prefix=$SYSROOT/$HOST_ROOT/usr                \
-    --disable-nls                                   \
-    --enable-shared                                 \
-    --disable-multilib                              \
-    --disable-decimal-float                         \
-    --enable-threads=posix                          \
-    --disable-libgomp                               \
-    --disable-libssp                                \
-    --enable-languages=c,c++                        \
-    --enable-__cxa_atexit                           \
-    --with-float=soft                               \
-    --disable-libstdcxx-pch                         \
-    --disable-bootstrap                             \
-    --with-local-prefix=$HOST_ROOT/usr/local        \
-    --with-native-system-header-dir=$HOST_ROOT/usr/include 
-make -j $THREADS
-make install
-</code></pre></div><p>参数说明：</p>
-<ul>
-<li><code>--with-sysroot</code>：因为目标是能在R6300v2上运行的gcc，所以不能像之前那样把sysroot设置成<code>$SYSROOT</code>了，这样会使gcc在R6300v2上找错头文件和库的位置。</li>
-<li><code>--disable-bootstrap</code>：gcc编译时有一个机制是用编译出来的gcc再编译一次自身看看能不能成功编译，这里如果开始这个机制会报错，具体原因不明，还是参考<a href=https://gcc.gnu.org/install/configure.html>Installing GCC: Configuration</a>。</li>
-</ul>
-<h2 id=结束语>结束语</h2>
-<p>至此gcc成功在R6300v2上运行了，但还不是很完美，用g++编译出来的程序结束时会出现段错误。原因我还不清楚，现在也不想深究了，毕竟gcc没有什么问题，也算是完成了最初的目标。但是要把路由器打造成一个真实的编译环境显然还差的很远，缺少make，缺少各种库，而且也不现实，毕竟CPU没有那么强悍，还不如用交叉编译工具链搞完后直接放上去。</p>
-<p>在整整四天的折腾过程中，我编译了二十来遍gcc，家里的奔腾G2020太弱，编译一次要半小时以上，可以说弄得身心俱疲，全凭着一股怨念支撑着我，也让我深深感受到一点，没有理论只是支撑的瞎折腾纯属浪费时间。所以还是好好学习吧。</p>
-<h2 id=后记>后记</h2>
-<p>昨天写完这篇文章后，我兴致冲冲的想用编译出来的native gcc编译自己以前写的程序，也算是测试，要是连我自己写的小程序都编译不了，那不是扯淡么。我在以前写过的程序里挑了一个不依赖其他库的，就是大三搞的那个PL0，开始编译。第一步先编译在R6300v2上的make。</p>
-<h4 id=make>make</h4>
-<p>我下载的make版本是3.8.2，最新版好像是4.0.0了。make的编译很简单。把它安装在目标系统的位置下就可以了。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>./configure --host=$TARGET --prefix=$SYSROOT/$HOST_ROOT/usr/
-make -j $THREADS
-make install
-</code></pre></div><p>make编译完成后，我就直接把PL0代码拷到路由器上开始跑了。编译成功！我很开心，运行，<code>segmentation fault</code>！我很纳闷，程序在x86上跑的很正常，是不是gcc啥的又有问题。简单加了几句printf定位问题，发现是在词法分析的地方，代码太久远了，我自己也不清楚里面的结构了，就不要说改了。一狠心我就想再编译个gdb调试，于是又折腾了一阵子。</p>
-<h4 id=gdb>gdb</h4>
-<p>gdb依赖termcap，先从网上下载<code>termcap-1.3.1.tar.gz</code>，这是一个非常古老的程序，编译，安装。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>./configure --prefix=/vita/termcap --host=$TARGET
-make
-make install
-</code></pre></div><p>termcap编译出来的是静态链接文件<code>libtermcap.a</code>,所以我偷懒没有把它装到目标系统位置下，随便找了个目录放。</p>
-<p>termcap编译后就可以编译gdb了。先用几个环境变量指定termcap的位置。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>export LDFLAGS=&#34;-static -L/vita/termcap/lib&#34;
-export CPPFLAGS=&#34;-I/vita/termcap/include&#34;
-export CFLAGS=&#34;-I/vita/termcap/include&#34;
-</code></pre></div><p>然后正常编译就可以了。</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight>../gdb-7.8/configure --host=$TARGET --prefix=$SYSROOT/$HOST_ROOT/usr/
-make -j $THREADS
-make install
-</code></pre></div><p>###问题所在</p>
-<p>大功告成，开始用gdb调试，发现问题出在一个while循环里，看样子是死循环下标越界导致的段错误。可是这段代码在x86上跑的好好的，应该不是算法问题才对。因为循环不跳出所以看了下循环的条件</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c>    <span style=color:#66d9ef>while</span>((ch <span style=color:#f92672>=</span> buffer_get_next(buf)) <span style=color:#f92672>!=</span> EOF)
-</code></pre></div><p>print一下ch，显示255。什么，255？不应该是-1么，立马写了个测试程序测试下，发现EOF的值确实是-1，但赋值给char型的ch后就变成255了，然后再判等的时候永远是false。网上稍微查了下，发现确实如此，ARM下面的gcc默认char为unsigned char，不像x86下char默认为signed char，而C标准中规定char是有符号数还是无符号数可以由编译器自己决定。</p>
-<p>至此问题已经清楚了，<del>图个方便我把EOF全部改成了255，再编译</del>，编译时加上<code>-fsigned-char</code>选项，程序运行正常，不会段错误了。</p>
-<p>不得不说C语言真是博大精深，永远也学不透……</p>
-</div>
-</div>
-<div id=post-footer class="post-footer main-content-wrap">
-<div class=post-actions-wrap>
-<nav>
-<ul class="post-actions post-action-nav">
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="下一篇: autotools折腾记">
-<i class="fa fa-angle-left"></i>
-<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/settle-down/ data-tooltip=安家落户 aria-label="上一篇: 安家落户">
-<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
-<i class="fa fa-angle-right"></i>
-</a>
-</li>
-</ul>
-</nav>
-<ul class="post-actions post-action-share">
-<li class="post-action hide-lg hide-md hide-sm">
-<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
-<i class="fa fa-share-alt" aria-hidden=true></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
-<i class="fa fa-comment"></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
-<i class="fa fa-arrow-up" aria-hidden=true></i>
-</a>
-</li>
-</ul>
-</div>
-<div id=gitalk>
-<noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript>
-</div>
-<script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
-<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('gitalk').innerHTML='Gitalk comments not available by default when the website is previewed locally.';return}new Gitalk({clientID:'2d9c9d837f8496107211',clientSecret:'5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2',repo:'core2duoe6420.github.io',owner:'core2duoe6420',admin:['core2duoe6420'],id:'07d9e9681f4fb485505bac8ab2c0f0d6',...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render('gitalk')})()</script>
-</div>
-</article>
-<footer id=footer class=main-content-wrap>
-<span class=copyrights>
-&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
-</span>
-</footer>
-</div>
-<div id=bottom-bar class=post-bottom-bar data-behavior=4>
-<div class=post-actions-wrap>
-<nav>
-<ul class="post-actions post-action-nav">
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="下一篇: autotools折腾记">
-<i class="fa fa-angle-left"></i>
-<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/settle-down/ data-tooltip=安家落户 aria-label="上一篇: 安家落户">
-<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
-<i class="fa fa-angle-right"></i>
-</a>
-</li>
-</ul>
-</nav>
-<ul class="post-actions post-action-share">
-<li class="post-action hide-lg hide-md hide-sm">
-<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
-<i class="fa fa-share-alt" aria-hidden=true></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
-<i class="fa fa-comment"></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
-<i class="fa fa-arrow-up" aria-hidden=true></i>
-</a>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div id=about>
-<div id=about-card>
-<div id=about-btn-close>
-<i class="fa fa-times"></i>
-</div>
-<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-<h4 id=about-card-name>Alex King</h4>
-<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
-<div id=about-card-job>
-<i class="fa fa-briefcase"></i>
-<br>
-Human
-</div>
-<div id=about-card-location>
-<i class="fa fa-map-marker-alt"></i>
-<br>
-Shanghai
-</div>
-</div>
-</div>
-<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
-<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<!doctype html><html lang=zh-cn><head><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"交叉编译ARM Native GCC","datePublished":"2014-09-10T00:00:00Z","dateModified":"2014-09-10T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2014\/09\/cross-compile-arm-natvie-gcc\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。\n","keywords":[]}</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=generator content="Hugo 0.96.0 with theme Tranquilpeak 0.5.3-BETA"><meta name=author content="Alex King"><meta name=keywords content><meta name=description content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。"><meta property="og:description" content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。"><meta property="og:type" content="article"><meta property="og:title" content="交叉编译ARM Native GCC"><meta name=twitter:title content="交叉编译ARM Native GCC"><meta property="og:url" content="https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/"><meta property="twitter:url" content="https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/"><meta property="og:site_name" content="Alex King's blog"><meta property="og:description" content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。"><meta name=twitter:description content="前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。"><meta property="og:locale" content="zh-cn"><meta property="article:published_time" content="2014-09-10T00:00:00"><meta property="article:modified_time" content="2014-09-10T00:00:00"><meta name=twitter:card content="summary"><meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><title>交叉编译ARM Native GCC</title><link rel=icon href=https://blog.hljin.net/favicon.png><link rel=canonical href=https://blog.hljin.net/2014/09/cross-compile-arm-natvie-gcc/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css><link rel=stylesheet href=https://blog.hljin.net/css/override.css></head><body><div id=blog><header id=header data-behavior=4><i id=btn-open-sidebar class="fa fa-lg fa-bars"></i><div class=header-title><a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a></div><a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about"><img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a></header><nav id=sidebar data-behavior=4><div class=sidebar-container><div class=sidebar-profile><a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息><img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a><h4 class=sidebar-profile-name>Alex King</h4><h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5></div><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/ title=Home><i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories><i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags><i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives><i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/#about title=About><i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub><i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=4 class=hasCoverMetaIn><article class=post id=top><div class="post-header main-content-wrap text-left"><h1 class=post-title>交叉编译ARM Native GCC</h1><div class="postShorten-meta post-meta"><time datetime=2014-09-10T00:00:00Z>九月 10, 2014</time></div></div><div class="post-content markdown"><div class=main-content-wrap><p>前阵子学会了用ip tunnel建立隧道来让没有原生IPv6的电脑用上IPv6，心里痒痒想在家里也提前用上IPv6，于是狠下心买了心仪已久的R6300v2，配上ddwrt，顺利用上了IPv6。</p><p>R6300v2配备了BCM4708，ARM cortex-a9双核800Mhz，最新的ddwrt的内核版本是3.10.25，可以说非常新了，于是就想能不能在路由器上面跑GCC，编译程序。在网上找了好久，能在路由器上直接运行的GCC找不到，能交叉编译出路由器能运行的程序的GCC倒是有，openwrt那边一大堆。我没有交叉编译的真实经历，但是寒假的时候看过一本《深度探索Linux操作系统 系统构建和原理解析》（以下简称《简析》），当初跟著书上的步骤一步步做下来的，虽然成功了但没怎么搞懂，于是萌发了自己从头构建一个能在路由器上运行的GCC的想法，就此开始了长达四天的折腾之旅。</p><h2 id=环境>环境</h2><p>宿主机：<code>Ubuntu 14.04 64位，gcc 4.8.2</code></p><p>工具链版本：<code>binutils-2.24 gcc-4.9.1 glibc-2.19 linux-3.10.25</code>（因为我安装的ddwrt内核是3.10.25）</p><p>编译gcc需要三个额外的库，gmp mpc mpfr，从网上下载后解压，把文件夹名从gmp-version mpc-version mpfr-version改为gmp mpc mpfr，然后放到gcc-4.9.1文件夹下，gcc较新版本可以正确处理这几个库的位置了，不用其他参数指定（gcc-4.7.4需要configure的时候指定<code>--with-mpfr-include</code>和<code>--with-mpfr-lib</code>，折腾的时候得到的教训）。</p><p>首先交叉编译要确定目标机器的三元组，也就是arch-vendor-os，在Ubuntu中这个三元组是<code>x86_64-pc-linux-gnu</code>，而R6300v2上的三元组，经过一番折腾后最终我用的是<code>arm-ddwrt-linux-gnueabi</code>。这个三元组非常重要，因为事关C库的编译。网上经常能见到的有<code>arm-none-eabi</code>，这个表示没有操作系统，使用newlib作为C库，折腾的时候我也试过这个三元组，后来发现没有操作系统怎么可能是我要的。还有最后的<code>gnueabi</code>，这个还有变种<code>gnueabihf</code>，表示CPU有FPU，hf的意思据我推测应该是hard float，但是据说因为路由器不需要浮点运算，所以R6300v2把FPU阉割掉了-:(……最后还有一种也就是我网上找到的交叉编译器<code>arm-openwrt-linux-uclibcgnueabi</code>，其实是使用uclibc作为C库的编译器，ddwrt也自带了uclibc，所以用它编译的程序是可以在R6300v2上运行的。另外也可以看出vendor其实无所谓，随便取好了……</p><p>全部源代码解压完后，需要对gcc做个patch。因为我的情况比较特殊，路由器上的/挂载位置是只读的，意味着我没法往常规目录/lib和/usr写入文件，况且路由器的内置容量也放不下gcc和glibc这样的庞然大物，好在R6300v2有USB接口，可以插上USB存储设备，我把U盘挂载在<code>/tmp/mnt/usb</code>下（因为/tmp是ramfs，可写），把glibc的链接文件都放在<code>/tmp/mnt/usb/lib</code>下，把/usr下的文件放到<code>/tmp/mnt/usb/usr</code>下。但是程序启动时操作系统加载的dynamic linker是gcc硬编码在代码里的，所以要修改dynamic linker的位置。</p><p>关于dynamic linker，可以使用<code>readelf -l a.out</code>查看，输出中会有一句</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>[Requesting program interpreter: /lib64/ld-linux-x86-64.so.2]
+</span></span></code></pre></div><p>这是我在Ubuntu x86_64上的输出结果，而我的目标是</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>[Requesting program interpreter: /tmp/mnt/usb/lib/ld-linux.so.3]
+</span></span></code></pre></div><p>在gcc-4.9.1目录下执行以下代码，即可打上补丁，代码来自LFS的教程，我加了一项linux-eabi.h，因为我的目标是ARM而LFS的目标是x86。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>for file in $(find gcc/config -name linux64.h -o -name linux.h -o -name sysv4.h -o -name linux-eabi.h)
+</span></span><span style=display:flex><span>do
+</span></span><span style=display:flex><span>    cp -uv $file{,.orig}
+</span></span><span style=display:flex><span>    sed -e &#39;s@/lib\(64\)\?\(32\)\?/ld@/tmp/mnt/usb&amp;@g&#39; \
+</span></span><span style=display:flex><span>    -e &#39;s@/usr@/tmp/mnt/usb@g&#39; $file.orig &gt; $file
+</span></span><span style=display:flex><span>    echo &#39;
+</span></span><span style=display:flex><span>#undef STANDARD_STARTFILE_PREFIX_1
+</span></span><span style=display:flex><span>#undef STANDARD_STARTFILE_PREFIX_2
+</span></span><span style=display:flex><span>#define STANDARD_STARTFILE_PREFIX_1 &#34;/tmp/mnt/usb/lib/&#34;
+</span></span><span style=display:flex><span>#define STANDARD_STARTFILE_PREFIX_2 &#34;&#34;&#39; &gt;&gt; $file
+</span></span><span style=display:flex><span>    touch $file.orig
+</span></span><span style=display:flex><span>done
+</span></span></code></pre></div><h2 id=环境变量>环境变量</h2><p>这些是我在命令中用到的环境变量，来源上面都说明过了。BUILD_DIR就是编译的工作目录。要说明的是CROSS_TOOL目录下放入的在x86上运行的交叉编译工具，而SYSROOT目录下放的是在R6300v2上运行的程序，包括最终生成gcc、glibc库和头文件。交叉工具链编译时的sysroot机制太复杂了，我也没有完全搞清……至于为什么是/vita，因为一开始我是跟着《简析》来做的，书里面用的是/vita。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>THREADS=2
+</span></span><span style=display:flex><span>TARGET=arm-ddwrt-linux-gnueabi
+</span></span><span style=display:flex><span>HOST=x86_64-pc-linux-gnu
+</span></span><span style=display:flex><span>BUILD=$HOST
+</span></span><span style=display:flex><span>INSTALL_ROOT=/vita
+</span></span><span style=display:flex><span>SYSROOT=$INSTALL_ROOT/sysroot
+</span></span><span style=display:flex><span>CROSS_TOOL=$INSTALL_ROOT/cross-tool
+</span></span><span style=display:flex><span>HOST_ROOT_PREFIX=/tmp/mnt
+</span></span><span style=display:flex><span>HOST_ROOT=$HOST_ROOT_PREFIX/usb
+</span></span><span style=display:flex><span>BUILD_DIR=$INSTALL_ROOT/build
+</span></span></code></pre></div><h2 id=binutils-round-1>binutils round 1</h2><p>交叉编译的第一步永远是binutils，目标是编译出在x86上运行的目标代码为arm的ld、as等。脚本：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd binutils-build
+</span></span><span style=display:flex><span>../binutils-2.24/configure                          \
+</span></span><span style=display:flex><span>    --prefix=$CROSS_TOOL                            \
+</span></span><span style=display:flex><span>    --with-sysroot=$SYSROOT                         \
+</span></span><span style=display:flex><span>    --target=$TARGET                                \
+</span></span><span style=display:flex><span>    --disable-nls                                   \
+</span></span><span style=display:flex><span>    --disable-libssp
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>参数说明（所有的参数说明都是我根据自己的理解写的，不一定对，甚至错误的概率很高，好多我也只是根据网上抄的，但能用。）：</p><ul><li><code>--disable-nls</code>：nls的意思是Native Language Support，就是说编译期间只用英语提示。</li><li><code>--disable-libssp</code>：ssp好像是栈保护什么的，我也不知道为什么要禁用，反正大家都禁用了……</li></ul><h2 id=gcc-round-1>gcc round 1</h2><p>第一次编译gcc的目标是在没有C库的支持下编译出一个能用的最小功能的gcc，然后用它来编译glibc，关键的几个参数是<code>--without-headers</code>和<code>--with-newlib</code>，这两个参数告诉gcc用自带的头文件。脚本：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd ../gcc-build
+</span></span><span style=display:flex><span>../gcc-4.9.1/configure                              \
+</span></span><span style=display:flex><span>    --target=$TARGET                                \
+</span></span><span style=display:flex><span>    --prefix=$CROSS_TOOL                            \
+</span></span><span style=display:flex><span>    --with-sysroot=$SYSROOT                         \
+</span></span><span style=display:flex><span>    --with-newlib                                   \
+</span></span><span style=display:flex><span>    --without-headers                               \
+</span></span><span style=display:flex><span>    --disable-nls                                   \
+</span></span><span style=display:flex><span>    --disable-shared                                \
+</span></span><span style=display:flex><span>    --disable-multilib                              \
+</span></span><span style=display:flex><span>    --disable-decimal-float                         \
+</span></span><span style=display:flex><span>    --disable-threads                               \
+</span></span><span style=display:flex><span>    --disable-libatomic                             \
+</span></span><span style=display:flex><span>    --disable-libgomp                               \
+</span></span><span style=display:flex><span>    --disable-libitm                                \
+</span></span><span style=display:flex><span>    --disable-libquadmath                           \
+</span></span><span style=display:flex><span>    --disable-libsanitizer                          \
+</span></span><span style=display:flex><span>    --disable-libssp                                \
+</span></span><span style=display:flex><span>    --disable-libmudflap                            \
+</span></span><span style=display:flex><span>    --disable-libvtv                                \
+</span></span><span style=display:flex><span>    --disable-libcilkrts                            \
+</span></span><span style=display:flex><span>    --disable-libstdc++-v3                          \
+</span></span><span style=display:flex><span>    --enable-languages=c                            \
+</span></span><span style=display:flex><span>    --with-float=soft                               \
+</span></span><span style=display:flex><span>    --with-local-prefix=$HOST_ROOT/usr/local        \
+</span></span><span style=display:flex><span>    --with-native-system-header-dir=$HOST_ROOT/usr/include
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>参数说明：</p><ul><li><code>--target</code>：当target参数host参数不一样时，启用交叉编译。host没有指定时gcc会自动判断为当前的三元组。</li><li><code>--prefix</code>：这个参数只影响最终gcc的安装位置。</li><li><code>--disable-xxx</code>：第一次编译时禁用大部分的功能，因为没有C库编译不了。</li><li><code>--with-float=soft</code>：gcc配置时的<code>--with-xxx</code>参数大多数是用来指明编译出来的gcc在编译其他程序时的默认选项，同样的还有<code>--with-cpu --with-arch</code>等，使用了这个参数，当用编译出来的gcc编译其他程序的时候，会自动带上<code>-msoft-float</code>（不知道理解的对不对，可以参考<a href=https://gcc.gnu.org/install/configure.html>Installing GCC: Configuration</a>和<a href=https://gcc.gnu.org/onlinedocs/gcc-4.5.3/gcc/ARM-Options.html>ARM Options</a>)。</li><li><code>--with-local-prefix</code>：这个参数会把目录放到gcc默认的头文件搜索路径中，默认是<code>/usr/local</code>，参数中不需要<code>include</code>，但实际上是到<code>/usr/local/include</code>中找头文件的，这里之所以要改当然也是因为上一节中说明的问题。</li><li><code>--with-native-system-header-dir</code>：这个参数在第一轮编译gcc时其实用不到，要第二轮开始才用。它配合<code>--with-sysroot</code>指定在<strong>编译期间</strong>以及编译出来的gcc查找头文件的位置，所以最终查找头文件的位置是<code>$SYSROOT/$HOST_ROOT/usr/include</code>。为此我们需要把linux内核头文件和glibc的头文件都安装到这个位置。</li></ul><h2 id=内核头文件>内核头文件</h2><p>安装内核头文件比较简单，要注意的是ARCH参数，以及安装位置，这在上面介绍gcc参数时已经说过原因了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd ../linux-3.0.25
+</span></span><span style=display:flex><span>make mrproper
+</span></span><span style=display:flex><span>make ARCH=arm INSTALL_HDR_PATH=$SYSROOT/$HOST_ROOT/usr headers_install
+</span></span></code></pre></div><h2 id=glibc>glibc</h2><p>有了最初的gcc后，就可以用它来编译glibc了，glibc的配置中<code>--host</code>表明我们要生成在目标机器上运行的glibc，所以生成出来的glibc是不能在x86 Ubuntu上直接运行的。glibc也没有target的概念。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd ../glibc-build
+</span></span><span style=display:flex><span>rm -rf *
+</span></span><span style=display:flex><span>../glibc-2.19/configure                             \
+</span></span><span style=display:flex><span>    --prefix=$HOST_ROOT                             \
+</span></span><span style=display:flex><span>    --host=$TARGET                                  \
+</span></span><span style=display:flex><span>    --disable-profile                               \
+</span></span><span style=display:flex><span>    --enable-kernel=2.6.32                          \
+</span></span><span style=display:flex><span>    --with-headers=$SYSROOT/$HOST_ROOT/usr/include  \
+</span></span><span style=display:flex><span>    libc_cv_forced_unwind=yes                       \
+</span></span><span style=display:flex><span>    libc_cv_ctors_header=yes                        \
+</span></span><span style=display:flex><span>    libc_cv_c_cleanup=yes
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install_root=$SYSROOT install
+</span></span></code></pre></div><p>参数说明：</p><ul><li><code>--prefix</code>：指定安装目录。glibc的安装脚本也会把这个参数写入库文件的依赖中，在目标系统上库文件会到相应目录查找动态库，所以这里没有直接加上$SYSROOT，而是在安装的时候才指定安装目录为$SYSROOT。</li><li><code>--with-headers</code>：指定linux内核头文件目录，就是上一步中安装的位置。</li><li><code>libc_cv_*</code>：这三个是用来欺骗glibc的，具体的请参考<a href=http://www.linuxfromscratch.org/lfs/view/development/chapter05/glibc.html>Linux From Scratch 5.7 Glibc-2.19</a>。</li></ul><p>glibc安装完成后，默认把头文件放在<code>$SYSROOT/$HOST_ROOT/include</code>下，根据上面说的，我们要把它移动到<code>$SYSROOT/$HOST_ROOT/usr/include</code>下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cp -r $SYSROOT/$HOST_ROOT/include $SYSROOT/$HOST_ROOT/usr/
+</span></span></code></pre></div><h2 id=gcc-round-2>gcc round 2</h2><p>有了glibc之后就可以重新编译gcc，并开启大部分功能了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd ../gcc-build
+</span></span><span style=display:flex><span>rm -rf *
+</span></span><span style=display:flex><span>../gcc-4.9.1/configure                              \
+</span></span><span style=display:flex><span>    --target=$TARGET                                \
+</span></span><span style=display:flex><span>    --prefix=$CROSS_TOOL                            \
+</span></span><span style=display:flex><span>    --with-sysroot=$SYSROOT                         \
+</span></span><span style=display:flex><span>    --disable-nls                                   \
+</span></span><span style=display:flex><span>    --enable-shared                                 \
+</span></span><span style=display:flex><span>    --disable-multilib                              \
+</span></span><span style=display:flex><span>    --enable-threads=posix                          \
+</span></span><span style=display:flex><span>    --enable-languages=c,c++                        \
+</span></span><span style=display:flex><span>    --disable-libssp                                \
+</span></span><span style=display:flex><span>    --disable-decimal-float                         \
+</span></span><span style=display:flex><span>    --disable-libgomp                               \
+</span></span><span style=display:flex><span>    --with-float=soft                               \
+</span></span><span style=display:flex><span>    --with-local-prefix=$HOST_ROOT/usr/local        \
+</span></span><span style=display:flex><span>    --with-native-system-header-dir=$HOST_ROOT/usr/include
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>参数说明：</p><ul><li><code>--disable-decimal-float</code>：一次编译时提示目标系统不支持decimal-float，所以把它禁掉。</li><li><code>--disable-multilib --disable-libgomp</code>：这两个不加会导致编译出错（libiberty和zlib报错，具体原因也不清楚）。</li><li><code>--with-native-system-header-dir</code>：这个参数现在起作用了。</li></ul><p>这一轮编译完后，作为交叉编译工具的gcc已经完成了，用它编译出来的二进制文件，应该可以正常在R6300v2上运行了（当然前提是glibc的库文件放在正确的位置，也就是<code>/tmp/mnt/usb/lib</code>下）。写一个hello world，用readelf读取下elf的头信息：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>vita@cc-virtual-machine:/vita$ arm-ddwrt-linux-gnueabi-gcc a.c
+</span></span><span style=display:flex><span>vita@cc-virtual-machine:/vita$ ./a.out
+</span></span><span style=display:flex><span>-su: ./a.out: cannot execute binary file: Exec format error
+</span></span><span style=display:flex><span>vita@cc-virtual-machine:/vita$ readelf -h a.out
+</span></span><span style=display:flex><span>ELF Header:
+</span></span><span style=display:flex><span>  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+</span></span><span style=display:flex><span>  Class:                             ELF32
+</span></span><span style=display:flex><span>  Data:                              2&#39;s complement, little endian
+</span></span><span style=display:flex><span>  Version:                           1 (current)
+</span></span><span style=display:flex><span>  OS/ABI:                            UNIX - System V
+</span></span><span style=display:flex><span>  ABI Version:                       0
+</span></span><span style=display:flex><span>  Type:                              EXEC (Executable file)
+</span></span><span style=display:flex><span>  Machine:                           ARM
+</span></span><span style=display:flex><span>  Version:                           0x1
+</span></span><span style=display:flex><span>  Entry point address:               0x82d0
+</span></span><span style=display:flex><span>  Start of program headers:          52 (bytes into file)
+</span></span><span style=display:flex><span>  Start of section headers:          4444 (bytes into file)
+</span></span><span style=display:flex><span>  Flags:                             0x5000202, has entry point, Version5 EABI, soft-float ABI
+</span></span><span style=display:flex><span>  Size of this header:               52 (bytes)
+</span></span><span style=display:flex><span>  Size of program headers:           32 (bytes)
+</span></span><span style=display:flex><span>  Number of program headers:         8
+</span></span><span style=display:flex><span>  Size of section headers:           40 (bytes)
+</span></span><span style=display:flex><span>  Number of section headers:         37
+</span></span><span style=display:flex><span>  Section header string table index: 34
+</span></span></code></pre></div><h2 id=binutils-round-2>binutils round 2</h2><p>第二轮编译binutils的目标就是编译出能在R6300v2上运行的ld和as这些程序。关键参数是<code>--host</code>，指定了该参数后makefile就会调用<code>$TARGET-gcc</code>，也就是<code>arm-ddwrt-linux-gnueabi-gcc</code>等一系列交叉编译工具来编译binutils，而不是Ubuntu自带的。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>cd ../binutils-build
+</span></span><span style=display:flex><span>rm -rf *
+</span></span><span style=display:flex><span>../binutils-2.24/configure                          \
+</span></span><span style=display:flex><span>    --prefix=$SYSROOT/$HOST_ROOT/usr                \
+</span></span><span style=display:flex><span>    --with-sysroot                                  \
+</span></span><span style=display:flex><span>    --host=$TARGET                                  \
+</span></span><span style=display:flex><span>    --disable-nls                                   \
+</span></span><span style=display:flex><span>    --disable-libssp                                \
+</span></span><span style=display:flex><span>    --disable-werror
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>参数说明：</p><ul><li><code>--prefix</code>：因为要编译出在R6300v2上运行的binutils，所以安装到目标文件夹下。</li><li><code>--disable-werror</code>：不加这个参数编译期间会因为将警告视为错误而终止。</li></ul><h2 id=gcc-round-3>gcc round 3</h2><p>第三轮gcc目标当然是编译出能运行在R6300v2上的gcc编译器了。在编译开始前要先把<code>$SYSROOT/$HOST_ROOT/usr/include</code>下的文件拷贝到Ubuntu下的<code>$HOST_ROOT/usr/include</code>，也就是<code>/tmp/mnt/usb/usr/include</code>下，因为编译出的gcc要在R6300v2上运行，配置时的<code>--with-sysroot</code>参数不能想之前两轮那样设置为<code>$SYSROOT</code>了，而必须设置为<code>/</code>。所以头文件必须放到由<code>--with-native-system-header-dir</code>参数直接指定的目录下：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>rm -rf $HOST_ROOT_PREFIX
+</span></span><span style=display:flex><span>mkdir -p $HOST_ROOT/usr
+</span></span><span style=display:flex><span>cp -r $SYSROOT/$HOST_ROOT/usr/include $HOST_ROOT/usr
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>cd ../gcc-build
+</span></span><span style=display:flex><span>rm -rf *
+</span></span><span style=display:flex><span>../gcc-4.9.1/configure                              \
+</span></span><span style=display:flex><span>    --build=x86_64-pc-linux-gnu                     \
+</span></span><span style=display:flex><span>    --target=$TARGET                                \
+</span></span><span style=display:flex><span>    --host=$TARGET                                  \
+</span></span><span style=display:flex><span>    --with-sysroot=/                                \
+</span></span><span style=display:flex><span>    --prefix=$SYSROOT/$HOST_ROOT/usr                \
+</span></span><span style=display:flex><span>    --disable-nls                                   \
+</span></span><span style=display:flex><span>    --enable-shared                                 \
+</span></span><span style=display:flex><span>    --disable-multilib                              \
+</span></span><span style=display:flex><span>    --disable-decimal-float                         \
+</span></span><span style=display:flex><span>    --enable-threads=posix                          \
+</span></span><span style=display:flex><span>    --disable-libgomp                               \
+</span></span><span style=display:flex><span>    --disable-libssp                                \
+</span></span><span style=display:flex><span>    --enable-languages=c,c++                        \
+</span></span><span style=display:flex><span>    --enable-__cxa_atexit                           \
+</span></span><span style=display:flex><span>    --with-float=soft                               \
+</span></span><span style=display:flex><span>    --disable-libstdcxx-pch                         \
+</span></span><span style=display:flex><span>    --disable-bootstrap                             \
+</span></span><span style=display:flex><span>    --with-local-prefix=$HOST_ROOT/usr/local        \
+</span></span><span style=display:flex><span>    --with-native-system-header-dir=$HOST_ROOT/usr/include 
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>参数说明：</p><ul><li><code>--with-sysroot</code>：因为目标是能在R6300v2上运行的gcc，所以不能像之前那样把sysroot设置成<code>$SYSROOT</code>了，这样会使gcc在R6300v2上找错头文件和库的位置。</li><li><code>--disable-bootstrap</code>：gcc编译时有一个机制是用编译出来的gcc再编译一次自身看看能不能成功编译，这里如果开始这个机制会报错，具体原因不明，还是参考<a href=https://gcc.gnu.org/install/configure.html>Installing GCC: Configuration</a>。</li></ul><h2 id=结束语>结束语</h2><p>至此gcc成功在R6300v2上运行了，但还不是很完美，用g++编译出来的程序结束时会出现段错误。原因我还不清楚，现在也不想深究了，毕竟gcc没有什么问题，也算是完成了最初的目标。但是要把路由器打造成一个真实的编译环境显然还差的很远，缺少make，缺少各种库，而且也不现实，毕竟CPU没有那么强悍，还不如用交叉编译工具链搞完后直接放上去。</p><p>在整整四天的折腾过程中，我编译了二十来遍gcc，家里的奔腾G2020太弱，编译一次要半小时以上，可以说弄得身心俱疲，全凭着一股怨念支撑着我，也让我深深感受到一点，没有理论只是支撑的瞎折腾纯属浪费时间。所以还是好好学习吧。</p><h2 id=后记>后记</h2><p>昨天写完这篇文章后，我兴致冲冲的想用编译出来的native gcc编译自己以前写的程序，也算是测试，要是连我自己写的小程序都编译不了，那不是扯淡么。我在以前写过的程序里挑了一个不依赖其他库的，就是大三搞的那个PL0，开始编译。第一步先编译在R6300v2上的make。</p><h4 id=make>make</h4><p>我下载的make版本是3.8.2，最新版好像是4.0.0了。make的编译很简单。把它安装在目标系统的位置下就可以了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>./configure --host=$TARGET --prefix=$SYSROOT/$HOST_ROOT/usr/
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>make编译完成后，我就直接把PL0代码拷到路由器上开始跑了。编译成功！我很开心，运行，<code>segmentation fault</code>！我很纳闷，程序在x86上跑的很正常，是不是gcc啥的又有问题。简单加了几句printf定位问题，发现是在词法分析的地方，代码太久远了，我自己也不清楚里面的结构了，就不要说改了。一狠心我就想再编译个gdb调试，于是又折腾了一阵子。</p><h4 id=gdb>gdb</h4><p>gdb依赖termcap，先从网上下载<code>termcap-1.3.1.tar.gz</code>，这是一个非常古老的程序，编译，安装。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>./configure --prefix=/vita/termcap --host=$TARGET
+</span></span><span style=display:flex><span>make
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>termcap编译出来的是静态链接文件<code>libtermcap.a</code>,所以我偷懒没有把它装到目标系统位置下，随便找了个目录放。</p><p>termcap编译后就可以编译gdb了。先用几个环境变量指定termcap的位置。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>export LDFLAGS=&#34;-static -L/vita/termcap/lib&#34;
+</span></span><span style=display:flex><span>export CPPFLAGS=&#34;-I/vita/termcap/include&#34;
+</span></span><span style=display:flex><span>export CFLAGS=&#34;-I/vita/termcap/include&#34;
+</span></span></code></pre></div><p>然后正常编译就可以了。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-no-highlight data-lang=no-highlight><span style=display:flex><span>../gdb-7.8/configure --host=$TARGET --prefix=$SYSROOT/$HOST_ROOT/usr/
+</span></span><span style=display:flex><span>make -j $THREADS
+</span></span><span style=display:flex><span>make install
+</span></span></code></pre></div><p>###问题所在</p><p>大功告成，开始用gdb调试，发现问题出在一个while循环里，看样子是死循环下标越界导致的段错误。可是这段代码在x86上跑的好好的，应该不是算法问题才对。因为循环不跳出所以看了下循环的条件</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-c data-lang=c><span style=display:flex><span>    <span style=color:#66d9ef>while</span>((ch <span style=color:#f92672>=</span> buffer_get_next(buf)) <span style=color:#f92672>!=</span> EOF)
+</span></span></code></pre></div><p>print一下ch，显示255。什么，255？不应该是-1么，立马写了个测试程序测试下，发现EOF的值确实是-1，但赋值给char型的ch后就变成255了，然后再判等的时候永远是false。网上稍微查了下，发现确实如此，ARM下面的gcc默认char为unsigned char，不像x86下char默认为signed char，而C标准中规定char是有符号数还是无符号数可以由编译器自己决定。</p><p>至此问题已经清楚了，<del>图个方便我把EOF全部改成了255，再编译</del>，编译时加上<code>-fsigned-char</code>选项，程序运行正常，不会段错误了。</p><p>不得不说C语言真是博大精深，永远也学不透……</p></div></div><div id=post-footer class="post-footer main-content-wrap"><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="下一篇: autotools折腾记"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/settle-down/ data-tooltip=安家落户 aria-label="上一篇: 安家落户"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div><div id=gitalk><noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript></div><script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("gitalk").innerHTML="Gitalk comments not available by default when the website is previewed locally.";return}new Gitalk({clientID:"2d9c9d837f8496107211",clientSecret:"5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2",repo:"core2duoe6420.github.io",owner:"core2duoe6420",admin:["core2duoe6420"],id:"07d9e9681f4fb485505bac8ab2c0f0d6",...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render("gitalk")})()</script></div></article><footer id=footer class=main-content-wrap><span class=copyrights>&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved</span></footer></div><div id=bottom-bar class=post-bottom-bar data-behavior=4><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/10/autotools-play/ data-tooltip=autotools折腾记 aria-label="下一篇: autotools折腾记"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2014/09/settle-down/ data-tooltip=安家落户 aria-label="上一篇: 安家落户"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div></div></div><div id=about><div id=about-card><div id=about-btn-close><i class="fa fa-times"></i></div><img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片><h4 id=about-card-name>Alex King</h4><div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div><div id=about-card-job><i class="fa fa-briefcase"></i><br>Human</div><div id=about-card-location><i class="fa fa-map-marker-alt"></i><br>Shanghai</div></div></div><div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
@@ -491,6 +197,4 @@ Shanghai
 <script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
 <script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
 <script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
-</body>
-</html>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$("pre.code-highlight > code, pre > code").each(function(t,e){$(this).hasClass("codeblock")||$(this).addClass("codeblock"),hljs.highlightBlock(e)})})</script></body></html>

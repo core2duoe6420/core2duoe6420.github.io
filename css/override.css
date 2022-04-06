@@ -2,6 +2,11 @@
     max-width: 1000px;
 }
 
+.codeblock .code pre, 
+figure.highlight .code pre {
+    max-width: 1000px;
+}
+
 img[src$='#center']
 {
     margin: 0 auto;

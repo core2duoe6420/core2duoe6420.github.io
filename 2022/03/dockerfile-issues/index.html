@@ -1,297 +1,32 @@
-<!doctype html><html lang=zh-cn>
-<head>
-<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Dockerfile踩坑记","datePublished":"2022-03-07T00:00:00Z","dateModified":"2022-03-07T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/03\/dockerfile-issues\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。\n","keywords":[]}</script>
-<meta charset=utf-8>
-<meta name=viewport content="width=device-width,initial-scale=1">
-<meta http-equiv=x-ua-compatible content="IE=edge">
-<meta name=generator content="Hugo 0.92.2 with theme Tranquilpeak 0.5.3-BETA">
-<meta name=author content="Alex King">
-<meta name=keywords content>
-<meta name=description content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。">
-<meta property="og:description" content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。">
-<meta property="og:type" content="article">
-<meta property="og:title" content="Dockerfile踩坑记">
-<meta name=twitter:title content="Dockerfile踩坑记">
-<meta property="og:url" content="https://blog.hljin.net/2022/03/dockerfile-issues/">
-<meta property="twitter:url" content="https://blog.hljin.net/2022/03/dockerfile-issues/">
-<meta property="og:site_name" content="Alex King's blog">
-<meta property="og:description" content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。">
-<meta name=twitter:description content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。">
-<meta property="og:locale" content="zh-cn">
-<meta property="article:published_time" content="2022-03-07T00:00:00">
-<meta property="article:modified_time" content="2022-03-07T00:00:00">
-<meta property="article:tag" content="docker">
-<meta name=twitter:card content="summary">
-<meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
-<meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg">
-<title>Dockerfile踩坑记</title>
-<link rel=icon href=https://blog.hljin.net/favicon.png>
-<link rel=canonical href=https://blog.hljin.net/2022/03/dockerfile-issues/>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer>
-<link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css>
-<link rel=stylesheet href=https://blog.hljin.net/css/override.css>
-</head>
-<body>
-<div id=blog>
-<header id=header data-behavior=4>
-<i id=btn-open-sidebar class="fa fa-lg fa-bars"></i>
-<div class=header-title>
-<a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a>
-</div>
-<a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about">
-<img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-</a>
-</header>
-<nav id=sidebar data-behavior=4>
-<div class=sidebar-container>
-<div class=sidebar-profile>
-<a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息>
-<img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-</a>
-<h4 class=sidebar-profile-name>Alex King</h4>
-<h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5>
-</div>
-<ul class=sidebar-buttons>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/ title=Home>
-<i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
-<span class=sidebar-button-desc>首页</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories>
-<i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
-<span class=sidebar-button-desc>分类</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags>
-<i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
-<span class=sidebar-button-desc>标签</span>
-</a>
-</li>
-</ul>
-<ul class=sidebar-buttons>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives>
-<i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
-<span class=sidebar-button-desc>归档</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://blog.hljin.net/#about title=About>
-<i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
-<span class=sidebar-button-desc>关于</span>
-</a>
-</li>
-<li class=sidebar-button>
-<a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub>
-<i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
-<span class=sidebar-button-desc>GitHub</span>
-</a>
-</li>
-</ul>
-<ul class=sidebar-buttons>
-</ul>
-</div>
-</nav>
-<div id=main data-behavior=4 class=hasCoverMetaIn>
-<article class=post id=top>
-<div class="post-header main-content-wrap text-left">
-<h1 class=post-title>
-Dockerfile踩坑记
-</h1>
-<div class="postShorten-meta post-meta">
-<time datetime=2022-03-07T00:00:00Z>
-三月 7, 2022
-</time>
-</div>
-</div>
-<div class="post-content markdown">
-<div class=main-content-wrap>
-<p>最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。</p>
-<h2 id=copy指令的环境变量问题><code>COPY</code>指令的环境变量问题</h2>
-<p>来看以下Dockerfile：</p>
-<pre tabindex=0><code>FROM ubuntu:20.04
+<!doctype html><html lang=zh-cn><head><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"Dockerfile踩坑记","datePublished":"2022-03-07T00:00:00Z","dateModified":"2022-03-07T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2022\/03\/dockerfile-issues\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。\n","keywords":[]}</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=generator content="Hugo 0.96.0 with theme Tranquilpeak 0.5.3-BETA"><meta name=author content="Alex King"><meta name=keywords content><meta name=description content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。"><meta property="og:description" content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。"><meta property="og:type" content="article"><meta property="og:title" content="Dockerfile踩坑记"><meta name=twitter:title content="Dockerfile踩坑记"><meta property="og:url" content="https://blog.hljin.net/2022/03/dockerfile-issues/"><meta property="twitter:url" content="https://blog.hljin.net/2022/03/dockerfile-issues/"><meta property="og:site_name" content="Alex King's blog"><meta property="og:description" content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。"><meta name=twitter:description content="最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。"><meta property="og:locale" content="zh-cn"><meta property="article:published_time" content="2022-03-07T00:00:00"><meta property="article:modified_time" content="2022-03-07T00:00:00"><meta property="article:tag" content="docker"><meta name=twitter:card content="summary"><meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><title>Dockerfile踩坑记</title><link rel=icon href=https://blog.hljin.net/favicon.png><link rel=canonical href=https://blog.hljin.net/2022/03/dockerfile-issues/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css><link rel=stylesheet href=https://blog.hljin.net/css/override.css></head><body><div id=blog><header id=header data-behavior=4><i id=btn-open-sidebar class="fa fa-lg fa-bars"></i><div class=header-title><a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a></div><a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about"><img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a></header><nav id=sidebar data-behavior=4><div class=sidebar-container><div class=sidebar-profile><a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息><img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a><h4 class=sidebar-profile-name>Alex King</h4><h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5></div><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/ title=Home><i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories><i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags><i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives><i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/#about title=About><i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub><i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=4 class=hasCoverMetaIn><article class=post id=top><div class="post-header main-content-wrap text-left"><h1 class=post-title>Dockerfile踩坑记</h1><div class="postShorten-meta post-meta"><time datetime=2022-03-07T00:00:00Z>三月 7, 2022</time></div></div><div class="post-content markdown"><div class=main-content-wrap><p>最近在公司里写Dockerfile，需要build一个包含conda环境的image，踩了无数坑，只能感叹自己学艺不精，特此记录。</p><h2 id=copy指令的环境变量问题><code>COPY</code>指令的环境变量问题</h2><p>来看以下Dockerfile：</p><pre tabindex=0><code>FROM ubuntu:20.04
 
 COPY test.txt $HOME/
-</code></pre><p><code>$HOME</code>默认为<code>/root</code>，直觉上会认为<code>test.txt</code>被拷贝到了<code>/root</code>下，事实上并不是，<code>test.txt</code>被拷贝到了<code>/</code>下。这是因为<code>COPY</code>指令只认在Dockerfile中出现过的<code>ENV</code>指令的环境变量，与一般Shell的环境无关，以下Dockerfile则没有问题：</p>
-<pre tabindex=0><code>FROM ubuntu:20.04
+</code></pre><p><code>$HOME</code>默认为<code>/root</code>，直觉上会认为<code>test.txt</code>被拷贝到了<code>/root</code>下，事实上并不是，<code>test.txt</code>被拷贝到了<code>/</code>下。这是因为<code>COPY</code>指令只认在Dockerfile中出现过的<code>ENV</code>指令的环境变量，与一般Shell的环境无关，以下Dockerfile则没有问题：</p><pre tabindex=0><code>FROM ubuntu:20.04
 
 ENV HOME=/root
 COPY test.txt $HOME/
-</code></pre><h2 id=entrypoint指令的格式问题><code>ENTRYPOINT</code>指令的格式问题</h2>
-<p><code>ENTRYPOINT</code>指令接收字符串或是JSON格式。由于是JSON格式，不能使用单引号，一定要使用双引号。最坑的是如果你用了单引号，Docker不会报错，只会把它当成字符串作为<code>SHELL</code>指令（默认<code>/bin/sh -c</code>）的参数，于是就会报类似如下错误：</p>
-<pre tabindex=0><code>[/entrypoint.sh]: No such file or directory
-</code></pre><h2 id=bashrc问题><code>.bashrc</code>问题</h2>
-<p>这个问题其实和Docker关系不大。前文说过，我是在做与conda环境相关的image，主要参考了<a href=https://pythonspeed.com/articles/activate-conda-dockerfile/>这篇文章</a>，但是死活不成功。大致上是，在使用conda前，需要跑一次<code>conda init bash</code>命令，这个命令会往<code>~/.bashrc</code>里写入一些conda的初始化命令，根据文章里的步骤，我调用了这个命令，使用<code>SHELL</code>指令切换到了<code>bash --login -c</code>，然而conda始终报错说shell没有初始化。</p>
-<p>查阅一番资料后终于搞清楚了这个问题，主要是shell可以根据是否interactive，是否是login shell分成四种：</p>
-<table>
-<thead>
-<tr>
-<th>类型</th>
-<th>初始化脚本</th>
-<th>范例</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>interactive login shell</td>
-<td><code>/etc/profile</code>，随后<code>~/.bash_profile</code>，<code>~/.bash_login</code>，<code>~/.profile</code>中最先找到的那个</td>
-<td>通过SSH登录的bash，或<code>bash --login</code></td>
-</tr>
-<tr>
-<td>interactive non-login shell</td>
-<td><code>~/.bashrc</code></td>
-<td>登录后再调用一次bash</td>
-</tr>
-<tr>
-<td>non-interactive login shell</td>
-<td><code>/etc/profile</code>，随后<code>~/.bash_profile</code>，<code>~/.bash_login</code>，<code>~/.profile</code>中最先找到的那个</td>
-<td><code>bash --login -c</code></td>
-</tr>
-<tr>
-<td>non-interactive non-login shell</td>
-<td>无</td>
-<td><code>bash -c</code>或是<code>bash script.sh</code></td>
-</tr>
-</tbody>
-</table>
-<p>在bash中可以通过<code>shopt login_shell</code>查看当前shell是否是login shell。</p>
-<p>分的情况太多太混乱，于是为了统一interactive shell和non-interactive shell，一般会在<code>~/.bash_profile</code>或者<code>~/.profile</code>里加这么几行：</p>
-<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=color:#66d9ef>if</span> <span style=color:#f92672>[</span> -f <span style=color:#e6db74>&#34;</span>$HOME<span style=color:#e6db74>/.bashrc&#34;</span> <span style=color:#f92672>]</span>; <span style=color:#66d9ef>then</span>
-    . <span style=color:#e6db74>&#34;</span>$HOME<span style=color:#e6db74>/.bashrc&#34;</span>
-<span style=color:#66d9ef>fi</span>
-</code></pre></div><p>这样就能做到不管是不是interactive shell都会执行<code>~/.bashrc</code>了。</p>
-<p>造成我这个问题的原因在于我在Dockerfile里将<code>HOME</code>变量设到了一个临时文件夹（因为Openshift运行容器的UID近乎不可控的随机值，无法读写/root），同时我又没复制<code>~/.bash_profile</code>，导致<code>conda init bash</code>虽然写入了<code>~/.bashrc</code>，但是在non-interactive login shell中根本不执行。</p>
-<p>解决方法也很简单，拷贝一个<code>.bash_profile</code>过来就好了。</p>
-<p>这个问题在后来写<code>entrypoint.sh</code>时也遇到了，一开始的<code>entrypoint.sh</code>长这样：</p>
-<pre tabindex=0><code>#!/usr/bin/env bash
+</code></pre><h2 id=entrypoint指令的格式问题><code>ENTRYPOINT</code>指令的格式问题</h2><p><code>ENTRYPOINT</code>指令接收字符串或是JSON格式。由于是JSON格式，不能使用单引号，一定要使用双引号。最坑的是如果你用了单引号，Docker不会报错，只会把它当成字符串作为<code>SHELL</code>指令（默认<code>/bin/sh -c</code>）的参数，于是就会报类似如下错误：</p><pre tabindex=0><code>[/entrypoint.sh]: No such file or directory
+</code></pre><h2 id=bashrc问题><code>.bashrc</code>问题</h2><p>这个问题其实和Docker关系不大。前文说过，我是在做与conda环境相关的image，主要参考了<a href=https://pythonspeed.com/articles/activate-conda-dockerfile/>这篇文章</a>，但是死活不成功。大致上是，在使用conda前，需要跑一次<code>conda init bash</code>命令，这个命令会往<code>~/.bashrc</code>里写入一些conda的初始化命令，根据文章里的步骤，我调用了这个命令，使用<code>SHELL</code>指令切换到了<code>bash --login -c</code>，然而conda始终报错说shell没有初始化。</p><p>查阅一番资料后终于搞清楚了这个问题，主要是shell可以根据是否interactive，是否是login shell分成四种：</p><table><thead><tr><th>类型</th><th>初始化脚本</th><th>范例</th></tr></thead><tbody><tr><td>interactive login shell</td><td><code>/etc/profile</code>，随后<code>~/.bash_profile</code>，<code>~/.bash_login</code>，<code>~/.profile</code>中最先找到的那个</td><td>通过SSH登录的bash，或<code>bash --login</code></td></tr><tr><td>interactive non-login shell</td><td><code>~/.bashrc</code></td><td>登录后再调用一次bash</td></tr><tr><td>non-interactive login shell</td><td><code>/etc/profile</code>，随后<code>~/.bash_profile</code>，<code>~/.bash_login</code>，<code>~/.profile</code>中最先找到的那个</td><td><code>bash --login -c</code></td></tr><tr><td>non-interactive non-login shell</td><td>无</td><td><code>bash -c</code>或是<code>bash script.sh</code></td></tr></tbody></table><p>在bash中可以通过<code>shopt login_shell</code>查看当前shell是否是login shell。</p><p>分的情况太多太混乱，于是为了统一interactive shell和non-interactive shell，一般会在<code>~/.bash_profile</code>或者<code>~/.profile</code>里加这么几行：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span><span style=color:#66d9ef>if</span> <span style=color:#f92672>[</span> -f <span style=color:#e6db74>&#34;</span>$HOME<span style=color:#e6db74>/.bashrc&#34;</span> <span style=color:#f92672>]</span>; <span style=color:#66d9ef>then</span>
+</span></span><span style=display:flex><span>    . <span style=color:#e6db74>&#34;</span>$HOME<span style=color:#e6db74>/.bashrc&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#66d9ef>fi</span>
+</span></span></code></pre></div><p>这样就能做到不管是不是interactive shell都会执行<code>~/.bashrc</code>了。</p><p>造成我这个问题的原因在于我在Dockerfile里将<code>HOME</code>变量设到了一个临时文件夹（因为Openshift运行容器的UID近乎不可控的随机值，无法读写/root），同时我又没复制<code>~/.bash_profile</code>，导致<code>conda init bash</code>虽然写入了<code>~/.bashrc</code>，但是在non-interactive login shell中根本不执行。</p><p>解决方法也很简单，拷贝一个<code>.bash_profile</code>过来就好了。</p><p>这个问题在后来写<code>entrypoint.sh</code>时也遇到了，一开始的<code>entrypoint.sh</code>长这样：</p><pre tabindex=0><code>#!/usr/bin/env bash
 
-exec &quot;$@&quot;
-</code></pre><p>这样运行的是一个non-interactive non-login shell，不会运行任何初始化脚本，需要改成：</p>
-<pre tabindex=0><code>#!/usr/bin/env -S bash --login
+exec &#34;$@&#34;
+</code></pre><p>这样运行的是一个non-interactive non-login shell，不会运行任何初始化脚本，需要改成：</p><pre tabindex=0><code>#!/usr/bin/env -S bash --login
 
-exec &quot;$@&quot;
-</code></pre><p>才能正常工作。</p>
-<p>Shell基本功掌握不牢，真是惭愧，惭愧。</p>
-</div>
-</div>
-<div id=post-footer class="post-footer main-content-wrap">
-<div class=post-footer-tags>
-<span class="text-color-light text-small">标签</span><br>
-<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/docker/>docker</a>
-</div>
-<div class=post-actions-wrap>
-<nav>
-<ul class="post-actions post-action-nav">
-<li class=post-action>
-<a class="post-action-btn btn btn--disabled">
-<i class="fa fa-angle-left"></i>
-<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/samba-kodi/ data-tooltip=Samba配置问题导致Kodi播放卡顿 aria-label="上一篇: Samba配置问题导致Kodi播放卡顿">
-<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
-<i class="fa fa-angle-right"></i>
-</a>
-</li>
-</ul>
-</nav>
-<ul class="post-actions post-action-share">
-<li class="post-action hide-lg hide-md hide-sm">
-<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
-<i class="fa fa-share-alt" aria-hidden=true></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
-<i class="fa fa-comment"></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
-<i class="fa fa-arrow-up" aria-hidden=true></i>
-</a>
-</li>
-</ul>
-</div>
-<div id=gitalk>
-<noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript>
-</div>
-<script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
-<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById('gitalk').innerHTML='Gitalk comments not available by default when the website is previewed locally.';return}new Gitalk({clientID:'2d9c9d837f8496107211',clientSecret:'5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2',repo:'core2duoe6420.github.io',owner:'core2duoe6420',admin:['core2duoe6420'],id:'d575b5e423ed73f58e7e2995d7f1f77b',...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render('gitalk')})()</script>
-</div>
-</article>
-<footer id=footer class=main-content-wrap>
-<span class=copyrights>
-&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved
-</span>
-</footer>
-</div>
-<div id=bottom-bar class=post-bottom-bar data-behavior=4>
-<div class=post-actions-wrap>
-<nav>
-<ul class="post-actions post-action-nav">
-<li class=post-action>
-<a class="post-action-btn btn btn--disabled">
-<i class="fa fa-angle-left"></i>
-<span class="hide-xs hide-sm text-small icon-ml">下一篇</span>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/samba-kodi/ data-tooltip=Samba配置问题导致Kodi播放卡顿 aria-label="上一篇: Samba配置问题导致Kodi播放卡顿">
-<span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
-<i class="fa fa-angle-right"></i>
-</a>
-</li>
-</ul>
-</nav>
-<ul class="post-actions post-action-share">
-<li class="post-action hide-lg hide-md hide-sm">
-<a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子>
-<i class="fa fa-share-alt" aria-hidden=true></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论>
-<i class="fa fa-comment"></i>
-</a>
-</li>
-<li class=post-action>
-<a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部>
-<i class="fa fa-arrow-up" aria-hidden=true></i>
-</a>
-</li>
-</ul>
-</div>
-</div>
-</div>
-<div id=about>
-<div id=about-card>
-<div id=about-btn-close>
-<i class="fa fa-times"></i>
-</div>
-<img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片>
-<h4 id=about-card-name>Alex King</h4>
-<div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div>
-<div id=about-card-job>
-<i class="fa fa-briefcase"></i>
-<br>
-Human
-</div>
-<div id=about-card-location>
-<i class="fa fa-map-marker-alt"></i>
-<br>
-Shanghai
-</div>
-</div>
-</div>
-<div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div>
-<script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+exec &#34;$@&#34;
+</code></pre><p>才能正常工作。</p><p>Shell基本功掌握不牢，真是惭愧，惭愧。</p></div></div><div id=post-footer class="post-footer main-content-wrap"><div class=post-footer-tags><span class="text-color-light text-small">标签</span><br><a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/docker/>docker</a></div><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/04/kotlin-coroutine-note/ data-tooltip="Kotlin Coroutine笔记" aria-label="下一篇: Kotlin Coroutine笔记"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/samba-kodi/ data-tooltip=Samba配置问题导致Kodi播放卡顿 aria-label="上一篇: Samba配置问题导致Kodi播放卡顿"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div><div id=gitalk><noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript></div><script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("gitalk").innerHTML="Gitalk comments not available by default when the website is previewed locally.";return}new Gitalk({clientID:"2d9c9d837f8496107211",clientSecret:"5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2",repo:"core2duoe6420.github.io",owner:"core2duoe6420",admin:["core2duoe6420"],id:"d575b5e423ed73f58e7e2995d7f1f77b",...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render("gitalk")})()</script></div></article><footer id=footer class=main-content-wrap><span class=copyrights>&copy; 2022 Powered by Hugo with tranquilpeak. All Rights Reserved</span></footer></div><div id=bottom-bar class=post-bottom-bar data-behavior=4><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/04/kotlin-coroutine-note/ data-tooltip="Kotlin Coroutine笔记" aria-label="下一篇: Kotlin Coroutine笔记"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2022/02/samba-kodi/ data-tooltip=Samba配置问题导致Kodi播放卡顿 aria-label="上一篇: Samba配置问题导致Kodi播放卡顿"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div></div></div><div id=about><div id=about-card><div id=about-btn-close><i class="fa fa-times"></i></div><img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片><h4 id=about-card-name>Alex King</h4><div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div><div id=about-card-job><i class="fa fa-briefcase"></i><br>Human</div><div id=about-card-location><i class="fa fa-map-marker-alt"></i><br>Shanghai</div></div></div><div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
 <script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
@@ -306,6 +41,4 @@ Shanghai
 <script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
 <script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
 <script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
-<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$('pre.code-highlight > code, pre > code').each(function(b,a){$(this).hasClass('codeblock')||$(this).addClass('codeblock'),hljs.highlightBlock(a)})})</script>
-</body>
-</html>
+<script>$(document).ready(function(){hljs.configure({classPrefix:'',useBR:!1}),$("pre.code-highlight > code, pre > code").each(function(t,e){$(this).hasClass("codeblock")||$(this).addClass("codeblock"),hljs.highlightBlock(e)})})</script></body></html>
