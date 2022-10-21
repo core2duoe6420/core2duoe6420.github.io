@@ -35,7 +35,7 @@ Virtual Machine Manager转成Web版，用是能用，但是虚拟机的画面奇
 WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XML配置。基本上基于KVM的虚拟机方案都会用到libvirt的XML配置，所以我这里直接给出我折腾成功的配置。
 
 ```xml
-<domain type='kvm' id='40'>
+<domain type='kvm' id='2'>
   <name>DSM</name>
   <uuid>186682f9-0f0b-4a9e-867b-364706339405</uuid>
   <description>None</description>
@@ -87,61 +87,47 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
       <alias name='usb-disk25'/>
       <address type='usb' bus='0' port='3'/>
     </disk>
-    <controller type='usb' index='0' model='qemu-xhci'>
-      <alias name='usb'/>
-      <address type='pci' domain='0x0000' bus='0x02' slot='0x02' function='0x0'/>
+    <controller type='pci' index='0' model='pcie-root'>
+      <alias name='pcie.0'/>
     </controller>
     <controller type='sata' index='0'>
       <alias name='ide'/>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x1f' function='0x2'/>
     </controller>
-    <controller type='pci' index='0' model='pcie-root'>
-      <alias name='pcie.0'/>
-    </controller>
-    <controller type='pci' index='1' model='pcie-root-port'>
-      <model name='pcie-root-port'/>
-      <target chassis='1' port='0x10'/>
-      <alias name='pci.1'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0' multifunction='on'/>
-    </controller>
-    <controller type='pci' index='2' model='pcie-to-pci-bridge'>
-      <model name='pcie-pci-bridge'/>
-      <alias name='pci.2'/>
-      <address type='pci' domain='0x0000' bus='0x01' slot='0x00' function='0x0'/>
-    </controller>
-    <controller type='pci' index='3' model='pcie-root-port'>
-      <model name='pcie-root-port'/>
-      <target chassis='3' port='0x11'/>
-      <alias name='pci.3'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x1'/>
-    </controller>
-    <controller type='pci' index='4' model='pcie-root-port'>
-      <model name='pcie-root-port'/>
-      <target chassis='4' port='0x12'/>
-      <alias name='pci.4'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x2'/>
+    <controller type='usb' index='0' model='qemu-xhci'>
+      <alias name='usb'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
     </controller>
     <controller type='scsi' index='0' model='virtio-scsi'>
       <alias name='scsi0'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
     </controller>
     <interface type='bridge'>
       <mac address='xx:xx:xx:xx:xx:xx'/>
-      <source network='host-bridge' portid='34dc117e-195a-451c-8f6e-52cc5962b181' bridge='br0'/>
+      <source network='host-bridge' portid='90d5d18c-6959-47ee-80b3-ce4774d28600' bridge='br0'/>
       <target dev='vnet0'/>
       <model type='virtio'/>
       <alias name='net0'/>
-      <address type='pci' domain='0x0000' bus='0x02' slot='0x01' function='0x0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
     </interface>
+    <video>
+      <model type='vmvga' vram='16384' heads='1' primary='yes'/>
+      <alias name='video0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x04' function='0x0'/>
+    </video>
+    <memballoon model='virtio'>
+      <alias name='balloon0'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x05' function='0x0'/>
+    </memballoon>    
     <serial type='pty'>
-      <source path='/dev/pts/1'/>
+      <source path='/dev/pts/0'/>
       <target type='isa-serial' port='0'>
         <model name='isa-serial'/>
       </target>
       <alias name='serial0'/>
     </serial>
-    <console type='pty' tty='/dev/pts/1'>
-      <source path='/dev/pts/1'/>
+    <console type='pty' tty='/dev/pts/0'>
+      <source path='/dev/pts/0'/>
       <target type='serial' port='0'/>
       <alias name='serial0'/>
     </console>
@@ -154,19 +140,10 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
     <graphics type='spice' port='5900' autoport='yes' listen='0.0.0.0'>
       <listen type='address' address='0.0.0.0'/>
     </graphics>
-    <video>
-      <model type='vmvga' vram='16384' heads='1' primary='yes'/>
-      <alias name='video0'/>
-      <address type='pci' domain='0x0000' bus='0x00' slot='0x01' function='0x0'/>
-    </video>
     <hub type='usb'>
       <alias name='hub0'/>
       <address type='usb' bus='0' port='1'/>
     </hub>
-    <memballoon model='virtio'>
-      <alias name='balloon0'/>
-      <address type='pci' domain='0x0000' bus='0x03' slot='0x00' function='0x0'/>
-    </memballoon>
   </devices>
   <seclabel type='dynamic' model='dac' relabel='yes'>
     <label>+0:+0</label>
@@ -181,7 +158,7 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
 /usr/bin/qemu-system-x86_64 \
     -name guest=DSM,debug-threads=on \
     -S \
-    -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-40-DSM/master-key.aes \
+    -object secret,id=masterKey0,format=raw,file=/var/lib/libvirt/qemu/domain-5-DSM/master-key.aes \
     -blockdev {"driver":"file","filename":"/usr/share/OVMF/OVMF_CODE.fd","node-name":"libvirt-pflash0-storage","auto-read-only":true,"discard":"unmap"} \
     -blockdev {"node-name":"libvirt-pflash0-format","read-only":true,"driver":"raw","file":"libvirt-pflash0-storage"} \
     -blockdev {"driver":"file","filename":"/var/lib/libvirt/qemu/nvram/DSM_VARS.fd","node-name":"libvirt-pflash1-storage","auto-read-only":true,"discard":"unmap"} \
@@ -199,12 +176,8 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
     -rtc base=utc \
     -no-shutdown \
     -boot menu=on,strict=on \
-    -device pcie-root-port,port=0x10,chassis=1,id=pci.1,bus=pcie.0,multifunction=on,addr=0x2 \
-    -device pcie-pci-bridge,id=pci.2,bus=pci.1,addr=0x0 \
-    -device pcie-root-port,port=0x11,chassis=3,id=pci.3,bus=pcie.0,addr=0x2.0x1 \
-    -device pcie-root-port,port=0x12,chassis=4,id=pci.4,bus=pcie.0,addr=0x2.0x2 \
-    -device qemu-xhci,id=usb,bus=pci.2,addr=0x2 \
-    -device virtio-scsi-pci,id=scsi0,bus=pcie.0,addr=0x4 \
+    -device qemu-xhci,id=usb,bus=pcie.0,addr=0x1 \
+    -device virtio-scsi-pci,id=scsi0,bus=pcie.0,addr=0x2 \
     -device usb-hub,id=hub0,bus=usb.0,port=1 \
     -blockdev {"driver":"host_device","filename":"/dev/sdb","aio":"native","node-name":"libvirt-3-storage","cache":{"direct":true,"no-flush":false},"auto-read-only":true,"discard":"unmap"} \
     -blockdev {"node-name":"libvirt-3-format","read-only":false,"cache":{"direct":true,"no-flush":false},"driver":"raw","file":"libvirt-3-storage"} \
@@ -215,13 +188,13 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
     -blockdev {"driver":"file","filename":"/image/tinycore-redpill-uefi.v0.9.2.8.img","node-name":"libvirt-1-storage","cache":{"direct":false,"no-flush":false},"auto-read-only":true,"discard":"unmap"} \
     -blockdev {"node-name":"libvirt-1-format","read-only":false,"cache":{"direct":false,"no-flush":false},"driver":"raw","file":"libvirt-1-storage"} \
     -device usb-storage,bus=usb.0,port=3,drive=libvirt-1-format,id=usb-disk25,bootindex=1,removable=off,write-cache=on \
-    -netdev tap,fd=46,id=hostnet0 \
-    -device virtio-net-pci,netdev=hostnet0,id=net0,mac=xx:xx:xx:xx:xx:xx,bus=pci.2,addr=0x1 \
+    -netdev tap,fd=46,id=hostnet0,vhost=on,vhostfd=47 \
+    -device virtio-net-pci,netdev=hostnet0,id=net0,mac=xx:xx:xx:xx:xx:xx,bus=pcie.0,addr=0x3 \
     -chardev pty,id=charserial0 \
     -device isa-serial,chardev=charserial0,id=serial0 \
     -spice port=5900,addr=0.0.0.0,disable-ticketing,seamless-migration=on \
-    -device vmware-svga,id=video0,vgamem_mb=16,bus=pcie.0,addr=0x1 \
-    -device virtio-balloon-pci,id=balloon0,bus=pci.3,addr=0x0 \
+    -device vmware-svga,id=video0,vgamem_mb=16,bus=pcie.0,addr=0x4 \
+    -device virtio-balloon-pci,id=balloon0,bus=pcie.0,addr=0x5 \
     -sandbox on,obsolete=deny,elevateprivileges=deny,spawn=deny,resourcecontrol=deny \
     -msg timestamp=on
 ```
@@ -234,7 +207,8 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
 - 两块直通的硬盘挂在了SCSI总线上。SATA总线也可以，但是QEMU虚拟出来的这个Q35的SATA控制器，只支持SATA 1.0的速度，也就是1.5Gbps，实测下来读取速度最高150MiB/s。况且TCRP还把这个标记为了Bogus Q35，所以最好别用
 - SCSI控制器用的是`virtio-scsi`，这个需要额外安装驱动，不过VirtIO性能好，可以最大程度发挥硬盘性能
 - 网卡用的是`virtio`，需要安装驱动。我先后试过`e1000e`和`vmxnet3`。`e1000e`用了之后DS918+会掉IP，无法引导。`vmxnet3`在VMWare里是个万兆网卡，结果我试下来在QEMU里链路速率只有千兆，用iperf3做多线程测试的时候，
-    甚至只能跑到600Mbps。VirtIO性能好，iperf3与宿主机测试可以跑到20Gbps（我的虚拟网络拓扑有两个bridge，不然说不定能跑到更高）
+    甚至只能跑到600Mbps。VirtIO性能好，iperf3与宿主机测试可以跑到26Gbps（我的虚拟网络拓扑有两个bridge，不然说不定能跑到更高）
+- 我研究了下libvirt的PCIe配置，为了XML看起来更简洁些，我把所有设备都挂到了bus 0上，所以在XML里没有`pcie-root-port`和`pcie-pci-bridge`设备，目前测试下来感觉并没有性能损失，不清楚PCIe设备的拓扑图到底会有啥影响
 
 ## 配置TCRP
 
