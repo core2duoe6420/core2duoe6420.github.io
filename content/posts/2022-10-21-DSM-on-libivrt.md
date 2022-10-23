@@ -28,7 +28,7 @@ Virtual Machine Manager转成Web版，用是能用，但是虚拟机的画面奇
 
 黑群晖的型号是DS918+，版本是截至当前最新的7.1.1-42962。
 
-目前DSM7的引导基本都是用TinyCore RedPill (TCRP)做的，TCRP版本是0.9.2.8.
+目前DSM7的引导基本都是用TinyCore RedPill (TCRP)做的，TCRP版本是~~0.9.2.8~~ 0.9.2.9.
 
 ## 硬件配置
 
@@ -220,8 +220,9 @@ WebVirtCloud在硬件配置方面只能满足最基本的需求，好在支持XM
 ./rploader.sh identifyusb
 ./rploader.sh satamap
 cat user_config.json | jq '.extra_cmdline.SataPortMap = "12"' | jq '.extra_cmdline.DiskIdxMap = "1000"' | tee user_config.json
-./rploader.sh ext apollolake-7.1.1-42962 add https://github.com/core2duoe6420/redpill-load/raw/develop/redpill-virtio/rpext-index.json
-./rploader.sh build apollolake-7.1.1-42962
+./rploader.sh ext ds918p-7.1.1-42962 add https://github.com/pocopico/redpill-load/raw/develop/redpill-virtio/rpext-index.json
+./rploader.sh ext ds918p-7.1.1-42962 add https://github.com/pocopico/redpill-load/raw/develop/redpill-acpid/rpext-index.json
+./rploader.sh build ds918p-7.1.1-42962
 ```
 
 重启，用Synology Assitant找到DSM，上传7.1.1-42962的PAT文件，搞定收工。
@@ -230,10 +231,11 @@ cat user_config.json | jq '.extra_cmdline.SataPortMap = "12"' | jq '.extra_cmdli
 
 - 关于`SataPortMap`和`DiskIdxMap`这两个参数的配置，根据硬件配置，我有两个控制器，一个是Q35的SATA控制器，一个是`virtio-scsi`驱动的SCSI控制器，Q35的控制器没有使用，所以对应的`DiskIdxMap`设为了`10`，
     超过了硬盘数量上限，会被忽略，SCSI控制器上挂了两块硬盘，所以对应的`SataPortMap`是2，对应的`DiskIdxMap`是`00`，表示从第一块盘开始
-- VirtIO驱动的问题，我安装的时候TCRP仓库里的VirtIO驱动还没加上`7.1.1-42962`，只更新到`7.1.0-42661`，于是我克隆了仓库，加入了`ds918p_42962`，然后手动添加extension。事实证明驱动本身可以使用，
-    只需要加个配置就行，这个问题等过一段时间TCRP仓库更新了就能解决。一开始的时候我安装了`7.1.0-42661`版本，也能成功，然后尝试在DSM系统里直接更新，结果失败，重启后就进不了系统了
-- 比较奇怪的一点是`serialgen`命令接收的是型号参数，而`build`命令接收的是CPU代号，因为我折腾的过程中试过好几个型号（DS918+，DS3622xs+，DS3617xs），所以特别烦这个，最后在参考资料#3中找到了好用的对应表，
-    我把那个贴这里供参考：
+- 增加的extention `acpid`是为了支持按关机键可以关机，这样可以通过`virsh shutdown DSM`正常关机
+- ~~VirtIO驱动的问题，我安装的时候TCRP仓库里的VirtIO驱动还没加上`7.1.1-42962`，只更新到`7.1.0-42661`，于是我克隆了仓库，加入了`ds918p_42962`，然后手动添加extension。事实证明驱动本身可以使用，
+    只需要加个配置就行，这个问题等过一段时间TCRP仓库更新了就能解决。一开始的时候我安装了`7.1.0-42661`版本，也能成功，然后尝试在DSM系统里直接更新，结果失败，重启后就进不了系统了~~ 仓库已更新，可直接使用
+- ~~比较奇怪的一点是`serialgen`命令接收的是型号参数，而`build`命令接收的是CPU代号，因为我折腾的过程中试过好几个型号（DS918+，DS3622xs+，DS3617xs），所以特别烦这个，最后在参考资料#3中找到了好用的对应表，
+    我把那个贴这里供参考：~~ 最新版居然统一了命令，表格就留在这里作参考了
 
     |DSM Platform|DS918+|DS3622xs+|DS920+|DS1621+|DS3617xs|DVA3221|DS3615xs|
     |---|---|---|---|---|---|---|---|
