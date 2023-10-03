@@ -131,7 +131,7 @@ tasks.test {
 
 当我们无意中在suspended transaction里使用了`async()`并在其中进行了数据库操作之后，就有概率遇到以下问题：
 
-![stracktrace](https://res.cloudinary.com/core2duoe6420/image/upload/v1696337185/posts/kotlin-coroutine-mysteries/stacktrace_vqg5g5.png)
+![stracktrace](https://res.cloudinary.com/core2duoe6420/image/upload/v1696341587/posts/kotlin-coroutine-mysteries/stacktrace_vqg5g5.png)
 
 目前尚不清楚深层次的原因。解决方案是使用`suspendedTransactionAsync()`代替`async()`进行数据库操作，或干脆不使用异步，按序执行数据库操作。
 
