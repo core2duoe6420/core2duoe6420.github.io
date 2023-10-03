@@ -88,7 +88,7 @@ fun main() {
 
 这只是一个小问题，只是头一次遇到的时候搞不清楚还是挺让人懵逼的。
 
-## `Exception`掉包之谜
+## `Exception`调包之谜
 
 来看一段单元测试代码：
 
@@ -109,7 +109,7 @@ fun test() {
 
 我们使用Gradle + JUnit 5运行的单元测试，从直觉上看这段代码应该通过测试，没有问题才对。实际情况是测试失败，`expected != actual`，并且`epected`变成了`actual`的`cause`，也即`actual.cause == expected`。
 
-这非常让人疑惑。后来通过自定义`Exception`的构造函数里打断点，发现确实被实例化了两次，第二次实例化是因为调用了一个`recoverStackTrace()`的函数，于是顺藤摸瓜找到了[Stacktrace recovery](https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/topics/debugging.md#stacktrace-recovery)。
+这非常让人疑惑。后来通过在自定义的`Exception`构造函数里打断点，发现确实被实例化了两次，第二次实例化是因为调用了一个`recoverStackTrace()`的函数，于是顺藤摸瓜找到了[Stacktrace recovery](https://github.com/Kotlin/kotlinx.coroutines/blob/master/docs/topics/debugging.md#stacktrace-recovery)。
 
 这应该是一个方便调试的机制，但是我并没有从例子里看出有什么大区别，先不求甚解以后再说了。
 
