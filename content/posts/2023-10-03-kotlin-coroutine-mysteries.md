@@ -31,7 +31,7 @@ runBlocking(executor) {
 因为里层`runBlocking`会在`executor`的那个线程上创建一个`eventLoop`，然后用这个`eventLoop`去执行它生成的coroutine。
 
 再来看因素1，如果在里层调用其它的coroutine创建函数，例如`async(executor) {}`，`launch(executor) {}`，或者是创建scope coroutine的函数，如`withContext(executor) {}`，
-`coroutineScope {}`，因为这些都是suspend函数，它们会让出线程，使得`executor`有机会去执行队列里的任务，因此也不会死锁。
+`coroutineScope {}`，因为这些都是非阻塞或是suspend函数，它们会让出线程，使得`executor`有机会去执行队列里的任务，因此也不会死锁。
 
 那么到这里关于死锁的原因已经解释清楚了。读者可能会认为这个例子非常简单，最多用于教学，在实际使用中不会遇到`runBlocking()`嵌套的情况，也不会遇到调度器只有一个线程的情况。然而我们踩的坑就是在生产环境中遇到的。
 当时的情况是，一旦我们尝试去获取一个列表，并且请求的数量大于64的时候，程序就会卡死，再也做不了其它任何事情。而64正好是`Dispatcher.IO`的默认线程上限。
