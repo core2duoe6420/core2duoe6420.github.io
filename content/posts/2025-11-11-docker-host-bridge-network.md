@@ -104,10 +104,10 @@ Chain DOCKER (2 references)
  pkts bytes target     prot opt in     out     source               destination
     0     0 RETURN     0    --  docker0 *       0.0.0.0/0            0.0.0.0/0
  1738  104K RETURN     0    --  br-da66fb6805df *       0.0.0.0/0            0.0.0.0/0
- 1780  107K DNAT       6    --  !br-da66fb6805df *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5000 to:172.18.0.8:5000
+ 1780  107K DNAT       6    --  !br-da66fb6805df *       0.0.0.0/0            0.0.0.0/0            tcp dpt:5000 to:172.18.0.4:5000
 ```
 
-因此数据包在`br-lan137`就已经被DNAT到了`172.18.0.8`，并且出口设备应该是`br-da66fb6805df`。这也是为什么我找防火墙规则一直找不到的原因。
+因此数据包在`br-lan137`就已经被DNAT到了`172.18.0.4`，并且出口设备应该是`br-da66fb6805df`。这也是为什么我找防火墙规则一直找不到的原因。
 
 ## 问题2：`FORWARD`规则
 
@@ -162,21 +162,97 @@ curl: (56) Recv failure: Connection reset by peer
 
 ## 问题4：`conntrack`
 
-前面提到，`bridge-nf-call-iptables=1`会导致数据包在经过bridge的时候调用iptables hooks，当包从`192.168.137.248`发往`192.168.137.250`的时候，它在第一跳`br-lan137`就被DNAT到了`172.18.0.8`，但是返回的时候，还是会先经过`br-mellanox`，再到`br-lan137`，两次经过bridge都会调用iptables hook，然后就不知道在哪里造成了奇怪的conntrack冲突，以下是conntrack的日志：
+前面提到，`bridge-nf-call-iptables=1`会导致数据包在经过bridge的时候调用iptables hooks，当包从`192.168.137.248`发往`192.168.137.250`的时候，它在第一跳`br-lan137`就被DNAT到了`172.18.0.4`，但是返回的时候，还是会先经过`br-mellanox`，再到`br-lan137`，两次经过bridge都会调用iptables hook，然后就引起了conntrack冲突，以下是conntrack的日志：
 
 ```text
 $ sudo conntrack -E --output extended,id | grep 5000 
-[NEW] ipv4 2 tcp 6 120 SYN_SENT src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=5000 [UNREPLIED] src=172.18.0.8 dst=192.168.137.248 sport=5000 dport=48076 id=1994087345 
-[UPDATE] ipv4 2 tcp 6 60 SYN_RECV src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=5000 src=172.18.0.8 dst=192.168.137.248 sport=5000 dport=48076 id=1994087345 
-[UPDATE] ipv4 2 tcp 6 432000 ESTABLISHED src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=5000 src=172.18.0.8 dst=192.168.137.248 sport=5000 dport=48076 [ASSURED] id=1994087345 
-[NEW] ipv4 2 tcp 6 300 ESTABLISHED src=192.168.137.250 dst=192.168.137.248 sport=5000 dport=48076 [UNREPLIED] src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=37926 id=1423083704 
-[DESTROY] ipv4 2 tcp 6 300 CLOSE src=192.168.137.250 dst=192.168.137.248 sport=5000 dport=48076 [UNREPLIED] src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=37926 id=1423083704 
-[UPDATE] ipv4 2 tcp 6 10 CLOSE src=192.168.137.248 dst=192.168.137.250 sport=48076 dport=5000 src=172.18.0.8 dst=192.168.137.248 sport=5000 dport=48076 [ASSURED] id=1994087345
+   [NEW] ipv4     2 tcp      6 120 SYN_SENT src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=5000 [UNREPLIED] src=172.18.0.4 dst=192.168.137.248 sport=5000 dport=55094 id=1952199411
+ [UPDATE] ipv4     2 tcp      6 60 SYN_RECV src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=5000 src=172.18.0.4 dst=192.168.137.248 sport=5000 dport=55094 id=1952199411
+ [UPDATE] ipv4     2 tcp      6 432000 ESTABLISHED src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=5000 src=172.18.0.4 dst=192.168.137.248 sport=5000 dport=55094 [ASSURED] id=1952199411
+    [NEW] ipv4     2 tcp      6 300 ESTABLISHED src=192.168.137.250 dst=192.168.137.248 sport=5000 dport=55094 [UNREPLIED] src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=19460 id=1724107866
+[DESTROY] ipv4     2 tcp      6 300 CLOSE src=192.168.137.250 dst=192.168.137.248 sport=5000 dport=55094 [UNREPLIED] src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=19460 id=1724107866
+ [UPDATE] ipv4     2 tcp      6 10 CLOSE src=192.168.137.248 dst=192.168.137.250 sport=55094 dport=5000 src=172.18.0.4 dst=192.168.137.248 sport=5000 dport=55094 [ASSURED] id=1952199411
 ```
 
-前3行输出都很正常，conntrack记录了`192.168.137.248:48076 => 192.168.137.250:5000, 172.18.0.8:5000 => 192.168.137.248:48076`的连接，到了第4条，src和dst反过来了，变成了`192.168.137.250:5000 => 192.168.137.248:48076`，实际上这应该正是`br-mellanox`和`br-lan137`看到的包，但不知道为什么conntrack没有把它和之前的连接关联到一起，而是新建了一条连接，又大概因为五元组相同造成了冲突，conntrack重写了端口`5000 => 37926`，直接导致`192.168.137.248`收到的包的src端口是37926而不是5000，于是回复了一个RST包，这个RST包在经过bridge后又变回了正常端口的包，于是双方都RST了。
+先看前3行输出，conntrack记录了`ORIGIN = 192.168.137.248:55094 => 192.168.137.250:5000`，`REPLY = 172.18.0.4:5000 => 192.168.137.248:55094`的连接。在数据包从Docker bridge出来经过3层路由从`br-mellanox`出来，在POSTROUTING里被SNAT回`192.168.137.250`，到这里一切正常。但第4条就不正常了，出现一条`ORIGIN = 192.168.137.250:5000 => 192.168.137.248:55094`，`REPLY = 192.168.137.248:55094 => 192.168.137.250:19460`的连接，可以看到源端口被改写为了`19460`，在容器内抓包可以验证这一点：
 
-但是为什么握手能成功，发送数据时就会失败呢，和ChatGPT聊了几个来回也没有答案，只说“在特定hash组合下被误判成新流”，真正的答案估计只有研究conntrack代码才能知道了。
+![wireshark](https://res.cloudinary.com/core2duoe6420/image/upload/v1762948869/posts/docker-host-bridge-network/docker-bridge-wireshark_jfeay6.png)
+
+在理解conntrack的工作原理后，想明白为啥这里的端口会被改写是不难的。conntrack里src和dst是不对易的，因此`192.168.137.248:55094 => 192.168.137.250:5000`和`192.168.137.250:5000 => 192.168.137.248:55094`是两个tuple，那么当数据包经过`br-lan137`时，conntrack看到的就是一条新连接，而conntrack在创建新连接时，需要同时插入REPLY的tuple，但这个ORIGIN对应的REPLY在哈希表中已经存在了，因此造成了冲突，于是有了这个奇怪的端口重写。而客户端在收到这个包后，当然匹配不到原本的socket，就会回应RST，这个RST包在抵达`br-lan137`后，又会被改写为正常的`5000`端口，于是一个RST包又被送到了服务端，服务端又发送了一个RST包结束连接，整条连接中断。
+
+在Cursor的帮助下定位到了改写源端口的[这行代码](https://github.com/torvalds/linux/blob/24172e0d79900908cf5ebf366600616d29c9b417/net/netfilter/nf_nat_core.c#L688)。因为并没有哪条iptables NAT规则匹配到了这个数据包，因此它走的是`nf_nat_alloc_null_binding`的逻辑。找资料的时候还找到了[这篇文章](https://blog.csdn.net/dog250/article/details/112691374)，写得挺有意思。
+
+这里真正让我百思不得其解，又花了整整一天时间查资料，和Cursor好几个来回，甚至用上了`bpftrace`的疑惑是：为什么TCP握手可以成功，但一发送数据就会创建一个新连接导致源端口被重写？明明在握手阶段`br-lan137`看到的也是`192.168.137.250:5000 => 192.168.137.248:55094`，为什么没有当时就直接被改写端口？
+
+在看了[这个关于conntrack的系列](https://thermalcircle.de/doku.php?id=blog:linux:connection_tracking_3_state_and_examples)后，我终于想明白了。如果conntrack在收到返回的握手数据包`SYN+ACK`后，认为这个数据包是INVALID的，那么就不会标记连接（也就是设置`skb->_nfct`），没有标记连接就不会被NAT，而conntrack并不会直接丢弃INVALID数据包，也没有iptables规则丢弃，因此这个包正常通行了。在尝试对INVALID数据包进行记录后也证实了这一点：
+
+```text
+$ sudo iptables -I FORWARD -m conntrack --ctstate INVALID  -i br-lan137 -j LOG --log-prefix "CT INVALID OUT: " --log-level 4
+$ journalctl -k | grep "CT INVALID" | grep 55094
+
+Nov 12 19:46:36 nas kernel: CT INVALID OUT: IN=br-lan137 OUT=br-lan137 PHYSIN=veth-lan137-1 PHYSOUT=veth5a44ead MAC=72:ff:6f:af:95:56:98:03:9b:c4:d3:04:08:00 SRC=192.168.137.250 DST=192.168.137.248 LEN=60 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=5000 DPT=55094 WINDOW=65160 RES=0x00 ACK SYN URGP=0
+Nov 12 19:46:36 nas kernel: CT INVALID OUT: IN=br-lan137 OUT=br-lan137 PHYSIN=veth-lan137-1 PHYSOUT=veth5a44ead MAC=72:ff:6f:af:95:56:98:03:9b:c4:d3:04:08:00 SRC=192.168.137.250 DST=192.168.137.248 LEN=40 TOS=0x00 PREC=0x00 TTL=63 ID=0 DF PROTO=TCP SPT=5000 DPT=55094 WINDOW=0 RES=0x00 RST URGP=0
+```
+
+那么在conntrack没有看到`SYN`的情况下，直接看到`SYN+ACK`是不是INVALID的呢？答案在[`nf_conntrack_proto_tcp.c`](https://github.com/torvalds/linux/blob/24172e0d79900908cf5ebf366600616d29c9b417/net/netfilter/nf_conntrack_proto_tcp.c)里，看这个状态转移表：
+
+```c
+#define sNO TCP_CONNTRACK_NONE
+#define sSS TCP_CONNTRACK_SYN_SENT
+#define sSR TCP_CONNTRACK_SYN_RECV
+#define sES TCP_CONNTRACK_ESTABLISHED
+#define sFW TCP_CONNTRACK_FIN_WAIT
+#define sCW TCP_CONNTRACK_CLOSE_WAIT
+#define sLA TCP_CONNTRACK_LAST_ACK
+#define sTW TCP_CONNTRACK_TIME_WAIT
+#define sCL TCP_CONNTRACK_CLOSE
+#define sS2 TCP_CONNTRACK_SYN_SENT2
+#define sIV TCP_CONNTRACK_MAX
+#define sIG TCP_CONNTRACK_IGNORE
+
+/*
+...
+ * Packets marked as INVALID (sIV):
+ *	if we regard them as truly invalid packets
+ */
+static const u8 tcp_conntracks[2][6][TCP_CONNTRACK_MAX] = {
+	{
+/* ORIGINAL */
+/* 	     sNO, sSS, sSR, sES, sFW, sCW, sLA, sTW, sCL, sS2	*/
+/*syn*/	   { sSS, sSS, sIG, sIG, sIG, sIG, sIG, sSS, sSS, sS2 },
+...
+/* 	     sNO, sSS, sSR, sES, sFW, sCW, sLA, sTW, sCL, sS2	*/
+/*synack*/ { sIV, sIV, sSR, sIV, sIV, sIV, sIV, sIV, sIV, sSR },
+/*
+ *	sNO -> sIV	Too late and no reason to do anything
+ *	sSS -> sIV	Client can't send SYN and then SYN/ACK
+ *	sS2 -> sSR	SYN/ACK sent to SYN2 in simultaneous open
+ *	sSR -> sSR	Late retransmitted SYN/ACK in simultaneous open
+ *	sES -> sIV	Invalid SYN/ACK packets sent by the client
+ *	sFW -> sIV
+ *	sCW -> sIV
+ *	sLA -> sIV
+ *	sTW -> sIV
+ *	sCL -> sIV
+ */
+...
+/* 	     sNO, sSS, sSR, sES, sFW, sCW, sLA, sTW, sCL, sS2	*/
+/*ack*/	   { sES, sIV, sES, sES, sCW, sCW, sTW, sTW, sCL, sIV },
+/*
+ *	sNO -> sES	Assumed.
+ *	sSS -> sIV	ACK is invalid: we haven't seen a SYN/ACK yet.
+ *	sS2 -> sIV
+ *	sSR -> sES	Established state is reached.
+ *	sES -> sES	:-)
+ *	sFW -> sCW	Normal close request answered by ACK.
+ *	sCW -> sCW
+ *	sLA -> sTW	Last ACK detected (RFC5961 challenged)
+ *	sTW -> sTW	Retransmitted last ACK. Remain in the same state.
+ *	sCL -> sCL
+ */
+```
+
+到这里就很清楚了，对这个数据包来说，初始状态是`sNO`，因为之前没有见过，那么在遇到`SYN+ACK`后，就变成了`sIV`，也就是INVALID。而之后发送的普通数据包只有`ACK`，在`sNO`的状态下转移到`sES`，也就是ESTABLISHED，符合上面的conntrack日志，从而有了一条连接，进而被NAT改写了端口。
 
 ## 解决方案
 
@@ -190,4 +266,4 @@ iptables -t raw -I PREROUTING 1 -i br-lan137 -j NOTRACK
 
 ## 结束语
 
-虽然没有完美能完美解答所有问题，但在排障的过程中还是学到了一些新东西，相信在不断积累后总会找到答案。
+这个问题困扰了我整整两天，差点就以为短时间内找不到答案了，好在最后还是都搞明白了。当然conntrack，乃至netfilter，nftables的细节，我依旧不懂，每次都是遇到问题了再去研究。不过现在有了ChatGPT和Cursor这样的工具，常见的问题AI能直接定位，不常见的问题也能给出一些思路，有了代码还能直接分析代码，学东西的效率要比以前高出太多了。在排查conntrack问题的过程中，AI还帮忙写了bpftrace脚本，一直久仰eBPF大名，但从没用过，这回也算尝鲜了，虽然最终想通问题并不是靠它，但确实是把利器。
