@@ -1,5 +1,5 @@
 ---
-title: "Docker桥接宿主机网络"
+title: "Docker桥接宿主网络"
 date: 2025-11-11
 slug: docker-host-bridge-network
 hide_site_title: true
@@ -7,7 +7,7 @@ tags:
 - docker
 ---
 
-本文副标题为我的野路子Docker网络环境，主要介绍我在配置Docker桥接宿主机网络过程中遇到的坑。
+本文副标题为我的野路子Docker网络环境，主要介绍我在配置Docker桥接宿主网络过程中遇到的坑。
 
 Docker的bridge网络是一个内部网络，与外界的通信都要通过三层路由和NAT转发，这在某些应用中不是很方便。而如果要桥接宿主机网络，最简单的方式是使用macvlan。但是macvlan有不能和宿主机通信的缺陷，并不是完美解。
 
