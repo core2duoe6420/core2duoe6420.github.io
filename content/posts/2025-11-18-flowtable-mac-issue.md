@@ -8,7 +8,7 @@ tags:
 - flowtable
 ---
 
-又双叒叕踩坑了。这回的坑是我尝试把原本Proxmox的虚拟机ImmortalWrt（OpenWrt的一个编译版本）迁移到Docker中，同时保留IP地址不变的过程中遇到的。这个ImmortalWrt里跑着我的WireGuard服务。迁移很顺利，启动Docker容器后，可以正常ping通，我的手机也能连上WireGuard，唯独一个24小时开机的节点死活连不上，表现为无法握手，WireGuard里一直显示接收为0KB，一个包都收不到。
+又双叒叕踩坑了。这回的坑是我尝试把原本Proxmox的虚拟机ImmortalWrt（OpenWrt的一个编译版本）迁移到Docker中，同时保留IP地址不变的过程中遇到的。这个ImmortalWrt里面跑着我的WireGuard服务。迁移很顺利，启动Docker容器后，可以正常ping通，我的手机也能连上WireGuard，唯独一个24小时开机的节点死活连不上，表现为无法握手，WireGuard里一直显示接收为0KB，一个包都收不到。
 
 <!--more-->
 
@@ -43,7 +43,7 @@ udp      17 src=x.x.x.x dst=192.168.0.254 sport=51820 dport=51820 packets=5418 b
 conntrack v1.4.8 (conntrack-tools): 395 flow entries have been shown.
 ```
 
-删除这条记录后，WireGuard就能成功连上了。但是一旦重建容器后就又会连不上，并且收到的MAC地址变成了上一次的MAC地址。到这里这个问题可以被稳定复现，触发的条件就是MAC地址发生了变化，因此可以推断出，主路由上一定有什么地方缓存了MAC地址。查看`ip neigh show`的结果一切正常，并没有已经失效的MAC地址。
+删除这条记录后，WireGuard就能成功连上了。但是一旦重建容器后就又会连不上，并且收到的MAC地址会变成上一个容器的MAC地址。到这里这个问题可以被稳定复现，触发的条件就是MAC地址发生了变化，因此可以推断出，主路由上一定有什么地方缓存了MAC地址。查看`ip neigh show`的结果一切正常，并没有已经失效的MAC地址。
 
 在我的认知范围内，并没有什么东西会缓存MAC地址如此长的时间，只能在网上瞎搜。这时候前面conntrack日志里的`[OFFLOAD]`引起了我的注意，这个flag之前在Ubuntu里没有见过，然后就顺藤摸瓜找到了flowtable这个nftables引入的新功能。具体的介绍可以看这两篇文章：
 
@@ -88,6 +88,4 @@ flowtable ft {
 }
 ```
 
-实际上这里设置成“硬件流量卸载”也应该是不生效的，根据文档，如果硬件流量卸载生效，conntrack中应该显示`HW_OFFLOAD`，而不是`OFFLOAD`。我这边不管设置成软件还是硬件，conntrack里现实的都是`OFFLOAD`。但是神奇的是，设置成硬件就会出现针对长期UDP连接（因为WireGuard每隔几秒就会尝试握手，所以这条UDP连接在conntrack里永远不会超时）的MAC地址被缓存的问题，但是设置成软件就不会有这个问题了。
-
-这次排障也算是让我知道了flowtable这个新功能，因为之前已经习惯了iptables，一直都不想去再学习新的nftables，现在nftables已经是主流了，是该走出舒适区接触新东西了。
+实际上这里设置成“硬件流量卸载”也应该是不生效的，根据文档，如果硬件流量卸载生效，conntrack中应该显示`HW_OFFLOAD`，而不是`OFFLOAD`。我这边不管设置成软件还是硬件，conntrack里显示的都是`OFFLOAD`。但是神奇的是，设置成硬件就会出现针对长期UDP连接（因为WireGuard每隔几秒就会尝试握手，所以这条UDP连接在conntrack里永远不会超时）的MAC地址被缓存的问题，但是设置成软件就不会有这个问题了。
