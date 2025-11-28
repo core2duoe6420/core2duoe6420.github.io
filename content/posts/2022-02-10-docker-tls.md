@@ -46,7 +46,24 @@ tags:
 
 > If you use a daemon.json file and also pass options to the dockerd command manually or using start-up scripts, and these options conflict, Docker fails to start with an error such as: ...
 
-因此还需要编辑`/lib/systemd/system/docker.service`，将其中的启动参数`-H fd://`删去，然后重启服务：
+~~因此还需要编辑`/lib/systemd/system/docker.service`，将其中的启动参数`-H fd://`删去，然后重启服务：~~
+
+更好的办法是使用`sudo systemctl edit docker.service`覆盖配置，否则每次docker更新都会把更新覆盖，输入：
+
+```
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd --containerd=/run/containerd/containerd.sock
+```
+
+Ubuntu默认的编辑器是nano，很不习惯，要换用vim的话：
+
+```
+sudo EDITOR=vim systemctl edit docker.service
+```
+
+保存后退出，会把配置写入`/etc/systemd/system/docker.service.d/override.conf`，然后重启服务
+
 
 ```bash
 sudo systemctl daemon-reload
