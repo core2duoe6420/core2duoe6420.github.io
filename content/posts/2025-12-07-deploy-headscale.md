@@ -252,7 +252,7 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 全部准备好后，运行`sudo docker-compose up -d`就搞定了。
 
-使用`https://hp.example.com:40000`可以访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：
+通过`https://hp.example.com:40000/admin/`访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：
 
 ```
 sudo docker exec headscale headscale apikeys create -e 999d
