@@ -4,58 +4,59 @@
 <span class=sidebar-button-desc>标签</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives><i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
 <span class=sidebar-button-desc>归档</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/#about title=About><i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
 <span class=sidebar-button-desc>关于</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub><i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
-<span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=4 class=hasCoverMetaIn><article class=post id=top><div class="post-header main-content-wrap text-left"><h1 class=post-title>部署Headscale组建私有Tailscale网络</h1><div class="postShorten-meta post-meta"><time datetime=2025-12-07T00:00:00Z>十二月 7, 2025</time></div></div><div class="post-content markdown"><div class=main-content-wrap><p>我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。</p><p>网上关于Headscale和Tailscale的资料不少，但很多都是重复的，而且不少还在用裸机部署Headscale，大段的介绍怎么用systemd配置自动启动，看得我无语。另外，有些资料可能过时或者没有说清楚，甚至Tailscale的官方文档都不一定完全正确。最后，Headscale的实现并没有包含Tailscale的所有功能，很容易踩坑。本文是半记录半教程性质，会介绍我的部署方式和配置，但细节需要读者自己理会并且随机应变。</p><h2 id=环境和方案>环境和方案</h2><p>本文介绍的部署环境和方案如下：</p><ul><li><p>Headscale版本<code>0.27.1</code>；选用headplane作为UI管理界面，版本<code>0.6.1</code>；Docker版本<code>29.1.1</code>。该版本的Headscale要求客户端tailscale至少是<code>1.64.0</code>，目前的tailscale最新版是<code>1.90.9</code></p></li><li><p>Headscale部署在海外服务器，使用内建的DERP服务；同时在境内再起一台DERP服务器加速连接。主要是因为我的域名没有备案，没法把Headscale直接部署在境内。我尝试过自签证书并且直接使用IP，Ubuntu上可以添加系统CA，没有问题，但我有客户端需要用OpenWrt，死活加不上证书，只能放弃</p></li><li><p>本文例子中会使用以下参数，请读者根据自己的情况自行调整：</p><ul><li><p>Headscale+Headplane服务器</p><ul><li>Headscale域名<code>hs.example.com</code></li><li>IP地址<code>48.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>内建DERP的STUN监听在UDP端口<code>41000</code></li><li>其它<code>metrics</code>，<code>grpc</code>端口都忽略</li><li>使用Caddy反代Headscale和Headplane。Caddy通过ACME获取证书，使用DNS-01 challenge，域名放在Cloudflare，API key是<code>cloudflare-dns-api-key</code></li><li>Headplane对外域名是<code>hp.example.com</code>，复用端口<code>40000</code>，同时我启用了mTLS保证安全，读者可以自行决定需不需要mTLS</li></ul></li><li><p>境内DERP服务器</p><ul><li>IP地址<code>47.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>STUN监听在<code>41000</code></li><li>不需要HTTP端口</li><li>不需要开放ICMP（官方文档说需要，但实测不需要也能跑）</li><li>使用自签证书</li></ul></li></ul></li></ul><p>准备以下配置文件，本文给出的配置文件限于篇幅，会删除官方注释，可以到官方仓库中找到example查看相应的注释：</p><ul><li><code>docker-compose.yaml</code>：无需多说</li><li><code>headscale/config.yaml</code>：<a href=https://github.com/juanfont/headscale/blob/main/config-example.yaml>官方示例</a></li><li><code>headplane/config.yaml</code>：<a href=https://github.com/tale/headplane/blob/main/config.example.yaml>官方示例</a></li><li><code>Caddyfile</code>：<a href=https://caddyserver.com/docs/caddyfile>官方文档</a></li></ul><h2 id=headscale服务器配置>Headscale服务器配置</h2><figure class="codeblock codeblock--tabbed"><figcaption><span>docker-compose.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br><span>31</span><br><span>32</span><br><span>33</span><br><span>34</span><br><span>35</span><br><span>36</span><br><span>37</span><br><span>38</span><br><span>39</span><br><span>40</span><br><span>41</span><br><span>42</span><br><span>43</span><br><span>44</span><br><span>45</span><br><span>46</span><br><span>47</span><br><span>48</span><br><span>49</span><br><span>50</span><br><span>51</span><br><span>52</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>services:
-  headscale:
-    image: headscale/headscale:latest
-    container_name: headscale
-    restart: unless-stopped
-    volumes:
-      - ./headscale/config.yaml:/etc/headscale/config.yaml
-      - ./headscale/derp.yaml:/etc/headscale/derp.yaml
-      - ./headscale/data:/var/lib/headscale
-      - ./headscale/run:/var/run/headscale
-    ports:
-      - &#34;41000:41000/udp&#34;
-    command: serve
-    networks:
-      - headscale-net
-
-  headplane:
-    image: ghcr.io/tale/headplane:latest
-    container_name: headplane
-    restart: unless-stopped
-    volumes:
-      - ./headplane/config.yaml:/etc/headplane/config.yaml
-      - ./headscale/config.yaml:/etc/headscale/config.yaml
-      - ./headplane/data:/var/lib/headplane
-      - /var/run/docker.sock:/var/run/docker.sock:ro  #见下文说明
-    networks:
-      - headscale-net
-
-  caddy:
-    build:
-      context: caddy
-      dockerfile: Dockerfile
-    container_name: caddy
-    restart: unless-stopped
-    user: 1000:1000
-    ports:
-      - &#34;40000:40000&#34;
-    environment:
-      CF_API_TOKEN: cloudflare-dns-api-key
-    volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./caddy/certs:/certs:ro
-      - ./caddy/data:/data
-      - ./caddy/config:/config
-    networks:
-      - headscale-net
-
-networks:
-  headscale-net:
-
-volumes:
-  headscale-run:</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headscale/config.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br><span>31</span><br><span>32</span><br><span>33</span><br><span>34</span><br><span>35</span><br><span>36</span><br><span>37</span><br><span>38</span><br><span>39</span><br><span>40</span><br><span>41</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>server_url: https://hs.example.com:40000
+<span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=4 class=hasCoverMetaIn><article class=post id=top><div class="post-header main-content-wrap text-left"><h1 class=post-title>部署Headscale组建私有Tailscale网络</h1><div class="postShorten-meta post-meta"><time datetime=2025-12-07T00:00:00Z>十二月 7, 2025</time></div></div><div class="post-content markdown"><div class=main-content-wrap><p>我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。</p><p>网上关于Headscale和Tailscale的资料不少，但很多都是重复的，而且不少还在用裸机部署Headscale，大段的介绍怎么用systemd配置自动启动，看得我无语。另外，有些资料可能过时或者没有说清楚，甚至Tailscale的官方文档都不一定完全正确。最后，Headscale的实现并没有包含Tailscale的所有功能，很容易踩坑。本文是半记录半教程性质，会介绍我的部署方式和配置，但细节需要读者自己理会并且随机应变。</p><h2 id=环境和方案>环境和方案</h2><p>本文介绍的部署环境和方案如下：</p><ul><li><p>Headscale版本<code>0.27.1</code>；选用headplane作为UI管理界面，版本<code>0.6.1</code>；Docker版本<code>29.1.1</code>。该版本的Headscale要求客户端tailscale至少是<code>1.64.0</code>，目前的tailscale最新版是<code>1.90.9</code></p></li><li><p>Headscale部署在海外服务器，使用内建的DERP服务；同时在境内再起一台DERP服务器加速连接。主要是因为我的域名没有备案，没法把Headscale直接部署在境内。我尝试过自签证书并且直接使用IP，Ubuntu上可以添加系统CA，没有问题，但我有客户端需要用OpenWrt，死活加不上证书，只能放弃</p></li><li><p>本文例子中会使用以下参数，请读者根据自己的情况自行调整：</p><ul><li><p>Headscale+Headplane服务器</p><ul><li>Headscale域名<code>hs.example.com</code></li><li>IP地址<code>48.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>内建DERP的STUN监听在UDP端口<code>41000</code></li><li>其它<code>metrics</code>，<code>grpc</code>端口都忽略</li><li>使用Caddy反代Headscale和Headplane。Caddy通过ACME获取证书，使用DNS-01 challenge，域名放在Cloudflare，API key是<code>cloudflare-dns-api-key</code></li><li>Headplane对外域名是<code>hp.example.com</code>，复用端口<code>40000</code>，同时我启用了mTLS保证安全，读者可以自行决定需不需要mTLS</li></ul></li><li><p>境内DERP服务器</p><ul><li>IP地址<code>47.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>STUN监听在<code>41000</code></li><li>不需要HTTP端口</li><li>不需要开放ICMP（官方文档说需要，但实测不需要也能跑）</li><li>使用自签证书</li></ul></li></ul></li></ul><h2 id=headscale服务器配置>Headscale服务器配置</h2><p>准备以下配置文件，本文给出的配置文件限于篇幅，会删除官方注释或省略部分内容，可以到官方仓库中找到example查看相应的注释。</p><h4 id=docker-composeyaml><code>docker-compose.yaml</code></h4><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>services</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>headscale</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>headscale/headscale:latest</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>headscale</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/config.yaml:/etc/headscale/config.yaml</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/derp.yaml:/etc/headscale/derp.yaml</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/data:/var/lib/headscale</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/run:/var/run/headscale</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;41000:41000/udp&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>command</span>: <span style=color:#ae81ff>serve</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>headscale-net</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>headplane</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>ghcr.io/tale/headplane:latest</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>headplane</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headplane/config.yaml:/etc/headplane/config.yaml</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/config.yaml:/etc/headscale/config.yaml</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headplane/data:/var/lib/headplane</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>/var/run/docker.sock:/var/run/docker.sock:ro </span> <span style=color:#75715e>#见下文说明</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>headscale-net</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>caddy</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>build</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>context</span>: <span style=color:#ae81ff>caddy</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>dockerfile</span>: <span style=color:#ae81ff>Dockerfile</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>caddy</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>user</span>: <span style=color:#ae81ff>1000</span>:<span style=color:#ae81ff>1000</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#e6db74>&#34;40000:40000&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>CF_API_TOKEN</span>: <span style=color:#ae81ff>cloudflare-dns-api-key</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./caddy/Caddyfile:/etc/caddy/Caddyfile:ro</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./caddy/certs:/certs:ro</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./caddy/data:/data</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./caddy/config:/config</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>headscale-net</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>networks</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>headscale-net</span>:
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>headscale-run</span>:
+</span></span></code></pre></div><h4 id=headscaleconfigyaml><code>headscale/config.yaml</code></h4><p>Headscale配置文件，<a href=https://github.com/juanfont/headscale/blob/main/config-example.yaml>官方示例</a>。如果不需要额外的DERP服务器，可以将<code>derp.paths</code>设为空数组。</p><pre tabindex=0><code>server_url: https://hs.example.com:40000
 listen_addr: 0.0.0.0:8080
 metrics_listen_addr: 127.0.0.1:9090
 grpc_listen_addr: 127.0.0.1:50443
@@ -95,7 +96,8 @@ dns:
   search_domains: []
   extra_records: []
 # 这个设置为true会使tailscale忽略启动时的--port参数使用随机端口
-randomize_client_port: false</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headscale/derp.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>regions:
+randomize_client_port: false
+</code></pre><h4 id=headscalederpyaml><code>headscale/derp.yaml</code></h4><p>配置额外的DERP服务器，如果不需要就可以不用，记得在<code>docker-compose.yaml</code>里删掉这个volume。</p><pre tabindex=0><code>regions:
   900:
     regionid: 900
     regioncode: china
@@ -109,63 +111,67 @@ randomize_client_port: false</code></pre></td></tr></tbody></table></figure></di
         derpport: 40000
         insecurefortests: true
         stunonly: false
-        canport80: false</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headplane/config.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>server:
-  host: &#34;0.0.0.0&#34;
-  port: 3000
-  cookie_secret: &#34;长度为32的随机字符串请自行生成&#34;
-  cookie_secure: true
-  cookie_max_age: 86400
-  data_path: &#34;/var/lib/headplane&#34;
-headscale:
-  url: &#34;http://headscale:8080&#34;
-  public_url: https://hs.example.com:40000
-  config_path: &#34;/etc/headscale/config.yaml&#34;
-  config_strict: true
-integration:
-  agent:
-    enabled: false
-  docker:
-    # 见下文说明
-    enabled: false
-    container_name: &#34;headscale&#34;
-    # container_label: &#34;me.tale.headplane.target=headscale&#34;
-    # socket: &#34;unix:///var/run/docker.sock&#34;</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>caddy/Caddyfile</span><ul class=tabs><li class="tab active">text</li></ul></figcaption><div class=tabs-content><figure class="highlight language-text text" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br></pre></td><td class=code><pre class="code-highlight language-text text"><code class=text>{
-    https_port 40000
-    auto_https disable_redirects
-    admin off
-}
-
-(cloudflare) {
-    dns cloudflare {env.CF_API_TOKEN}
-    resolvers 1.1.1.1
-}
-
-hs.example.com:40000 {
-    tls {
-        import cloudflare
-    }
-    reverse_proxy headscale:8080
-}
-
-hp.example.com:40000 {
-    tls {
-        import cloudflare
-
-        # mTLS客户端验证，如果headplane不暴露在公网可以不用
-        client_auth {
-            trust_pool file /certs/my_CA.crt
-            mode require_and_verify
-        }
-    }
-    reverse_proxy headplane:3000
-}</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>caddy/Dockerfile</span><ul class=tabs><li class="tab active">text</li></ul></figcaption><div class=tabs-content><figure class="highlight language-text text" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br></pre></td><td class=code><pre class="code-highlight language-text text"><code class=text>FROM caddy:builder AS builder
-
-RUN xcaddy build \
-    --with github.com/caddy-dns/cloudflare
-
-FROM caddy:latest
-
-COPY --from=builder /usr/bin/caddy /usr/bin/caddy</code></pre></td></tr></tbody></table></figure></div></figure><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行<code>sudo docker-compose up -d</code>就搞定了。</p><p>通过<code>https://hp.example.com:40000/admin/</code>访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
+        canport80: false
+</code></pre><h4 id=headplaneconfigyaml><code>headplane/config.yaml</code></h4><p>headplane配置文件，<a href=https://github.com/tale/headplane/blob/main/config.example.yaml>官方示例</a>。如果不需要Web UI，也可以不部署。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>server</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>host</span>: <span style=color:#e6db74>&#34;0.0.0.0&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>port</span>: <span style=color:#ae81ff>3000</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>cookie_secret</span>: <span style=color:#e6db74>&#34;长度为32的随机字符串请自行生成&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>cookie_secure</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>cookie_max_age</span>: <span style=color:#ae81ff>86400</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>data_path</span>: <span style=color:#e6db74>&#34;/var/lib/headplane&#34;</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>headscale</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>url</span>: <span style=color:#e6db74>&#34;http://headscale:8080&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>public_url</span>: <span style=color:#ae81ff>https://hs.example.com:40000</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>config_path</span>: <span style=color:#e6db74>&#34;/etc/headscale/config.yaml&#34;</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>config_strict</span>: <span style=color:#66d9ef>true</span>
+</span></span><span style=display:flex><span><span style=color:#f92672>integration</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>agent</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>enabled</span>: <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>  <span style=color:#f92672>docker</span>:
+</span></span><span style=display:flex><span>    <span style=color:#75715e># 见下文说明</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>enabled</span>: <span style=color:#66d9ef>false</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#e6db74>&#34;headscale&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># container_label: &#34;me.tale.headplane.target=headscale&#34;</span>
+</span></span><span style=display:flex><span>    <span style=color:#75715e># socket: &#34;unix:///var/run/docker.sock&#34;</span>
+</span></span></code></pre></div><h4 id=caddycaddyfile><code>caddy/Caddyfile</code></h4><p>Caddy配置文件，<a href=https://caddyserver.com/docs/caddyfile>官方文档</a>。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>{
+</span></span><span style=display:flex><span>    https_port 40000
+</span></span><span style=display:flex><span>    auto_https disable_redirects
+</span></span><span style=display:flex><span>    admin off
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>(cloudflare) {
+</span></span><span style=display:flex><span>    dns cloudflare {env.CF_API_TOKEN}
+</span></span><span style=display:flex><span>    resolvers 1.1.1.1
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>hs.example.com:40000 {
+</span></span><span style=display:flex><span>    tls {
+</span></span><span style=display:flex><span>        import cloudflare
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    reverse_proxy headscale:8080
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>hp.example.com:40000 {
+</span></span><span style=display:flex><span>    tls {
+</span></span><span style=display:flex><span>        import cloudflare
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        # mTLS客户端验证，如果headplane不暴露在公网可以不用
+</span></span><span style=display:flex><span>        client_auth {
+</span></span><span style=display:flex><span>            trust_pool file /certs/my_CA.crt
+</span></span><span style=display:flex><span>            mode require_and_verify
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    reverse_proxy headplane:3000
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><h4 id=caddydockerfile><code>caddy/Dockerfile</code></h4><p>这是用来创建caddy镜像的Dockerfile，caddy的dns都是以插件形式提供的，需要自己编译。如果读者使用别的DNS，请自行换成所使用的DNS，caddy官方支持的DNS可以在<a href="https://github.com/orgs/caddy-dns/repositories?type=all">这里</a>找到。</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-text data-lang=text><span style=display:flex><span>FROM caddy:builder AS builder
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>RUN xcaddy build \
+</span></span><span style=display:flex><span>    --with github.com/caddy-dns/cloudflare
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>FROM caddy:latest
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+</span></span></code></pre></div><h3 id=部署说明>部署说明</h3><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行<code>sudo docker-compose up -d</code>就搞定了。</p><p>通过<code>https://hp.example.com:40000/admin/</code>访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
 </code></pre><p>建议保留这个Key，因为每换一个浏览器都要重新输入，每次都重新生成的话麻烦。</p><p>然后在安装了tailscale的客户端上运行：</p><pre tabindex=0><code>sudo tailscale up --login-server https://hs.example.com:40000
 </code></pre><p>按步骤操作即可登录。</p><h2 id=derp服务器>DERP服务器</h2><p>部署DERP服务器需要准备好自签证书，将私钥和证书分别命名为<code>47.1.1.1.key</code>和<code>47.1.1.1.crt</code>放在<code>certs</code>文件夹内。请自行替换成自己的IP或者域名（备案了的话），这个命名规范是DERP要求的。</p><p>然后准备<code>docker-compose.yaml</code>：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>services</span>:
 </span></span><span style=display:flex><span>  <span style=color:#f92672>derper</span>:
