@@ -165,7 +165,7 @@ RUN xcaddy build \
 
 FROM caddy:latest
 
-COPY --from=builder /usr/bin/caddy /usr/bin/caddy</code></pre></td></tr></tbody></table></figure></div></figure><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行<code>sudo docker-compose up -d</code>就搞定了。</p><p>使用<code>https://hp.example.com:40000</code>可以访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy</code></pre></td></tr></tbody></table></figure></div></figure><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行<code>sudo docker-compose up -d</code>就搞定了。</p><p>通过<code>https://hp.example.com:40000/admin/</code>访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
 </code></pre><p>建议保留这个Key，因为每换一个浏览器都要重新输入，每次都重新生成的话麻烦。</p><p>然后在安装了tailscale的客户端上运行：</p><pre tabindex=0><code>sudo tailscale up --login-server https://hs.example.com:40000
 </code></pre><p>按步骤操作即可登录。</p><h2 id=derp服务器>DERP服务器</h2><p>部署DERP服务器需要准备好自签证书，将私钥和证书分别命名为<code>47.1.1.1.key</code>和<code>47.1.1.1.crt</code>放在<code>certs</code>文件夹内。请自行替换成自己的IP或者域名（备案了的话），这个命名规范是DERP要求的。</p><p>然后准备<code>docker-compose.yaml</code>：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>services</span>:
 </span></span><span style=display:flex><span>  <span style=color:#f92672>derper</span>:
