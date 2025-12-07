@@ -12,7 +12,7 @@ tags:
 
 在网上查阅了各种资料，以下尝试均没有效果：
 
-- 根据[这个帖子](https://forum.proxmox.com/threads/cannot-install-pve-as-uefi-os.126755/)说的，尝试运行`/sys/firmware/efi/efivars/dump-*`以腾出`efivarfs`空间，但我发现我的机器上根本没有`dump*`文件，`efivarfs`也有60%的可用空间，应该与这个无关
+- 根据[这个帖子](https://forum.proxmox.com/threads/cannot-install-pve-as-uefi-os.126755/)说的，尝试运行`rm /sys/firmware/efi/efivars/dump-*`以腾出`efivarfs`空间，但我发现我的机器上根本没有`dump-*`文件，`efivarfs`也有60%的可用空间，应该与这个无关
 - 使用`wipefs`和`dd`彻底清除分区表和文件系统
 - 调整各种BIOS参数
 - 重置BIOS参数
