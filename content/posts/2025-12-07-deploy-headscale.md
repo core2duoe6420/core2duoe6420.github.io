@@ -42,17 +42,13 @@ tags:
         - 不需要开放ICMP（官方文档说需要，但实测不需要也能跑）
         - 使用自签证书
 
-准备以下配置文件，本文给出的配置文件限于篇幅，会删除官方注释，可以到官方仓库中找到example查看相应的注释：
-
-- `docker-compose.yaml`：无需多说
-- `headscale/config.yaml`：[官方示例](https://github.com/juanfont/headscale/blob/main/config-example.yaml)
-- `headplane/config.yaml`：[官方示例](https://github.com/tale/headplane/blob/main/config.example.yaml)
-- `Caddyfile`：[官方文档](https://caddyserver.com/docs/caddyfile)
-
 ## Headscale服务器配置
 
-{{<tabbed-codeblock docker-compose.yaml>}}
-<!-- tab yaml -->
+准备以下配置文件，本文给出的配置文件限于篇幅，会删除官方注释或省略部分内容，可以到官方仓库中找到example查看相应的注释。
+
+#### `docker-compose.yaml`
+
+```yaml
 services:
   headscale:
     image: headscale/headscale:latest
@@ -105,11 +101,13 @@ networks:
 
 volumes:
   headscale-run:
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
 
-{{<tabbed-codeblock "headscale/config.yaml">}}
-<!-- tab yaml -->
+#### `headscale/config.yaml`
+
+Headscale配置文件，[官方示例](https://github.com/juanfont/headscale/blob/main/config-example.yaml)。如果不需要额外的DERP服务器，可以将`derp.paths`设为空数组。
+
+```
 server_url: https://hs.example.com:40000
 listen_addr: 0.0.0.0:8080
 metrics_listen_addr: 127.0.0.1:9090
@@ -151,11 +149,13 @@ dns:
   extra_records: []
 # 这个设置为true会使tailscale忽略启动时的--port参数使用随机端口
 randomize_client_port: false
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
 
-{{<tabbed-codeblock "headscale/derp.yaml">}}
-<!-- tab yaml -->
+#### `headscale/derp.yaml`
+
+配置额外的DERP服务器，如果不需要就可以不用，记得在`docker-compose.yaml`里删掉这个volume。
+
+```
 regions:
   900:
     regionid: 900
@@ -171,11 +171,13 @@ regions:
         insecurefortests: true
         stunonly: false
         canport80: false
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
 
-{{<tabbed-codeblock "headplane/config.yaml">}}
-<!-- tab yaml -->
+#### `headplane/config.yaml`
+
+headplane配置文件，[官方示例](https://github.com/tale/headplane/blob/main/config.example.yaml)。如果不需要Web UI，也可以不部署。
+
+```yaml
 server:
   host: "0.0.0.0"
   port: 3000
@@ -197,11 +199,13 @@ integration:
     container_name: "headscale"
     # container_label: "me.tale.headplane.target=headscale"
     # socket: "unix:///var/run/docker.sock"
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
 
-{{<tabbed-codeblock "caddy/Caddyfile">}}
-<!-- tab text -->
+#### `caddy/Caddyfile`
+
+Caddy配置文件，[官方文档](https://caddyserver.com/docs/caddyfile)。
+
+```text
 {
     https_port 40000
     auto_https disable_redirects
@@ -232,11 +236,13 @@ hp.example.com:40000 {
     }
     reverse_proxy headplane:3000
 }
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
 
-{{<tabbed-codeblock "caddy/Dockerfile">}}
-<!-- tab text -->
+#### `caddy/Dockerfile`
+
+这是用来创建caddy镜像的Dockerfile，caddy的dns都是以插件形式提供的，需要自己编译。如果读者使用别的DNS，请自行换成所使用的DNS，caddy官方支持的DNS可以在[这里](https://github.com/orgs/caddy-dns/repositories?type=all)找到。
+
+```text
 FROM caddy:builder AS builder
 
 RUN xcaddy build \
@@ -245,8 +251,9 @@ RUN xcaddy build \
 FROM caddy:latest
 
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-<!-- endtab -->
-{{</tabbed-codeblock>}}
+```
+
+### 部署说明
 
 我这里容器的用户都是`1000:1000`，因此在启动之前要保证挂载进容器的目录都是`1000`用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。
 
