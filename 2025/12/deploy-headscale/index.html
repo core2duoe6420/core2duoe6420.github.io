@@ -1,0 +1,227 @@
+<!doctype html><html lang=zh-cn><head><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"部署Headscale组建私有Tailscale网络","datePublished":"2025-12-07T00:00:00Z","dateModified":"2025-12-07T00:00:00Z","author":{"@type":"Person","name":"Alex King","image":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"},"mainEntityOfPage":{"@type":"WebPage","@id":"https:\/\/blog.hljin.net\/2025\/12\/deploy-headscale\/"},"publisher":{"@type":"Organization","name":"Alex King's blog","logo":{"@type":"ImageObject","url":"https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"}},"description":"我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。\n","keywords":[]}</script><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="IE=edge"><meta name=generator content="Hugo 0.111.3 with theme Tranquilpeak 0.5.3-BETA"><meta name=author content="Alex King"><meta name=keywords content><meta name=description content="我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。"><meta property="og:description" content="我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。"><meta property="og:type" content="article"><meta property="og:title" content="部署Headscale组建私有Tailscale网络"><meta name=twitter:title content="部署Headscale组建私有Tailscale网络"><meta property="og:url" content="https://blog.hljin.net/2025/12/deploy-headscale/"><meta property="twitter:url" content="https://blog.hljin.net/2025/12/deploy-headscale/"><meta property="og:site_name" content="Alex King's blog"><meta property="og:description" content="我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。"><meta name=twitter:description content="我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。"><meta property="og:locale" content="zh-cn"><meta property="article:published_time" content="2025-12-07T00:00:00"><meta property="article:modified_time" content="2025-12-07T00:00:00"><meta property="article:tag" content="headscale"><meta property="article:tag" content="headplane"><meta property="article:tag" content="tailscale"><meta property="article:tag" content="openwrt"><meta name=twitter:card content="summary"><meta property="og:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><meta property="twitter:image" content="https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg"><title>部署Headscale组建私有Tailscale网络</title><link rel=icon href=https://blog.hljin.net/favicon.png><link rel=canonical href=https://blog.hljin.net/2025/12/deploy-headscale/><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css integrity="sha512-H9jrZiiopUdsLpg94A333EfumgUBpO9MdbxStdeITo+KEIMaNfHNvwyjjDJb+ERPaRS6DpyRlKbvPUasNItRyw==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.css integrity="sha512-MLcK/YRapzET1qTBXrOiZE6bGBgtATMo2bIyalVJ8EKDEGNoeA3SPQkvWAR0zNS650YG13ocXBMeioDuZcSRuQ==" crossorigin=anonymous referrerpolicy=no-referrer><link rel=stylesheet href=https://blog.hljin.net/css/style-h6ccsoet3mzkbb0wngshlfbaweimexgqcxj0h5hu4h82olsdzz6wmqdkajm.min.css><link rel=stylesheet href=https://blog.hljin.net/css/override.css></head><body><div id=blog><header id=header data-behavior=4><i id=btn-open-sidebar class="fa fa-lg fa-bars"></i><div class=header-title><a class=header-title-link href=https://blog.hljin.net/ aria-label=去首页>Alex King's blog</a></div><a class=header-right-picture href=https://blog.hljin.net/#about aria-label="打开链接: /#about"><img class=header-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a></header><nav id=sidebar data-behavior=4><div class=sidebar-container><div class=sidebar-profile><a href=https://blog.hljin.net/#about aria-label=阅读有关作者的更多信息><img class=sidebar-profile-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片></a><h4 class=sidebar-profile-name>Alex King</h4><h5 class=sidebar-profile-bio>Observing without evaluating is the highest form of human intelligence</h5></div><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/ title=Home><i class="sidebar-button-icon fas fa-lg fa-home" aria-hidden=true></i>
+<span class=sidebar-button-desc>首页</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/categories title=Categories><i class="sidebar-button-icon fas fa-lg fa-bookmark" aria-hidden=true></i>
+<span class=sidebar-button-desc>分类</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/tags title=Tags><i class="sidebar-button-icon fas fa-lg fa-tags" aria-hidden=true></i>
+<span class=sidebar-button-desc>标签</span></a></li></ul><ul class=sidebar-buttons><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/archives title=Archives><i class="sidebar-button-icon fas fa-lg fa-archive" aria-hidden=true></i>
+<span class=sidebar-button-desc>归档</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://blog.hljin.net/#about title=About><i class="sidebar-button-icon fas fa-lg fa-user" aria-hidden=true></i>
+<span class=sidebar-button-desc>关于</span></a></li><li class=sidebar-button><a class=sidebar-button-link href=https://github.com/core2duoe6420 target=_blank rel=noopener title=GitHub><i class="sidebar-button-icon fab fa-lg fa-github" aria-hidden=true></i>
+<span class=sidebar-button-desc>GitHub</span></a></li></ul><ul class=sidebar-buttons></ul></div></nav><div id=main data-behavior=4 class=hasCoverMetaIn><article class=post id=top><div class="post-header main-content-wrap text-left"><h1 class=post-title>部署Headscale组建私有Tailscale网络</h1><div class="postShorten-meta post-meta"><time datetime=2025-12-07T00:00:00Z>十二月 7, 2025</time></div></div><div class="post-content markdown"><div class=main-content-wrap><p>我的私人家庭网络最早用的是Zerotier，但是发现连接不稳定，即使我的两个节点都有公网IP有时也会连不上，后来换了WireGuard就非常稳定。但最近新买了几个VPS，又有朋友家加入了网络，节点变多，安全规则也更复杂，WireGuard维护起来有点力不从心了，于是下定决心部署Headscale切换到Tailscale网络。</p><p>网上关于Headscale和Tailscale的资料不少，但很多都是重复的，而且不少还在用裸机部署Headscale，大段的介绍怎么用systemd配置自动启动，看得我无语。另外，有些资料可能过时或者没有说清楚，甚至Tailscale的官方文档都不一定完全正确。最后，Headscale的实现并没有包含Tailscale的所有功能，很容易踩坑。本文是半记录半教程性质，会介绍我的部署方式和配置，但细节需要读者自己理会并且随机应变。</p><h2 id=环境和方案>环境和方案</h2><p>本文介绍的部署环境和方案如下：</p><ul><li><p>Headscale版本<code>0.27.1</code>；选用headplane作为UI管理界面，版本<code>0.6.1</code>；Docker版本<code>29.1.1</code>。该版本的Headscale要求客户端tailscale至少是<code>1.64.0</code>，目前的tailscale最新版是<code>1.90.9</code></p></li><li><p>Headscale部署在海外服务器，使用内建的DERP服务；同时在境内再起一台DERP服务器加速连接。主要是因为我的域名没有备案，没法把Headscale直接部署在境内。我尝试过自签证书并且直接使用IP，Ubuntu上可以添加系统CA，没有问题，但我有客户端需要用OpenWrt，死活加不上证书，只能放弃</p></li><li><p>本文例子中会使用以下参数，请读者根据自己的情况自行调整：</p><ul><li><p>Headscale+Headplane服务器</p><ul><li>Headscale域名<code>hs.example.com</code></li><li>IP地址<code>48.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>内建DERP的STUN监听在UDP端口<code>41000</code></li><li>其它<code>metrics</code>，<code>grpc</code>端口都忽略</li><li>使用Caddy反代Headscale和Headplane。Caddy通过ACME获取证书，使用DNS-01 challenge，域名放在Cloudflare，API key是<code>cloudflare-dns-api-key</code></li><li>Headplane对外域名是<code>hp.example.com</code>，复用端口<code>40000</code>，同时我启用了mTLS保证安全，读者可以自行决定需不需要mTLS</li></ul></li><li><p>境内DERP服务器</p><ul><li>IP地址<code>47.1.1.1</code></li><li>HTTPS监听在<code>40000</code></li><li>STUN监听在<code>41000</code></li><li>不需要HTTP端口</li><li>不需要开放ICMP（官方文档说需要，但实测不需要也能跑）</li><li>使用自签证书</li></ul></li></ul></li></ul><p>准备以下配置文件，本文给出的配置文件限于篇幅，会删除官方注释，可以到官方仓库中找到example查看相应的注释：</p><ul><li><code>docker-compose.yaml</code>：无需多说</li><li><code>headscale/config.yaml</code>：<a href=https://github.com/juanfont/headscale/blob/main/config-example.yaml>官方示例</a></li><li><code>headplane/config.yaml</code>：<a href=https://github.com/tale/headplane/blob/main/config.example.yaml>官方示例</a></li><li><code>Caddyfile</code>：<a href=https://caddyserver.com/docs/caddyfile>官方文档</a></li></ul><h2 id=headscale服务器配置>Headscale服务器配置</h2><figure class="codeblock codeblock--tabbed"><figcaption><span>docker-compose.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br><span>31</span><br><span>32</span><br><span>33</span><br><span>34</span><br><span>35</span><br><span>36</span><br><span>37</span><br><span>38</span><br><span>39</span><br><span>40</span><br><span>41</span><br><span>42</span><br><span>43</span><br><span>44</span><br><span>45</span><br><span>46</span><br><span>47</span><br><span>48</span><br><span>49</span><br><span>50</span><br><span>51</span><br><span>52</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>services:
+  headscale:
+    image: headscale/headscale:latest
+    container_name: headscale
+    restart: unless-stopped
+    volumes:
+      - ./headscale/config.yaml:/etc/headscale/config.yaml
+      - ./headscale/derp.yaml:/etc/headscale/derp.yaml
+      - ./headscale/data:/var/lib/headscale
+      - ./headscale/run:/var/run/headscale
+    ports:
+      - &#34;41000:41000/udp&#34;
+    command: serve
+    networks:
+      - headscale-net
+
+  headplane:
+    image: ghcr.io/tale/headplane:latest
+    container_name: headplane
+    restart: unless-stopped
+    volumes:
+      - ./headplane/config.yaml:/etc/headplane/config.yaml
+      - ./headscale/config.yaml:/etc/headscale/config.yaml
+      - ./headplane/data:/var/lib/headplane
+      - /var/run/docker.sock:/var/run/docker.sock:ro  #见下文说明
+    networks:
+      - headscale-net
+
+  caddy:
+    build:
+      context: caddy
+      dockerfile: Dockerfile
+    container_name: caddy
+    restart: unless-stopped
+    user: 1000:1000
+    ports:
+      - &#34;40000:40000&#34;
+    environment:
+      CF_API_TOKEN: cloudflare-dns-api-key
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/certs:/certs:ro
+      - ./caddy/data:/data
+      - ./caddy/config:/config
+    networks:
+      - headscale-net
+
+networks:
+  headscale-net:
+
+volumes:
+  headscale-run:</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headscale/config.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br><span>31</span><br><span>32</span><br><span>33</span><br><span>34</span><br><span>35</span><br><span>36</span><br><span>37</span><br><span>38</span><br><span>39</span><br><span>40</span><br><span>41</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>server_url: https://hs.example.com:40000
+listen_addr: 0.0.0.0:8080
+metrics_listen_addr: 127.0.0.1:9090
+grpc_listen_addr: 127.0.0.1:50443
+grpc_allow_insecure: false
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+prefixes:
+  v4: 100.64.0.0/10
+  allocation: sequential
+derp:
+  server:
+    enabled: true
+    region_id: 999
+    region_code: &#34;headscale&#34;
+    region_name: &#34;Headscale Embedded DERP&#34;
+    verify_clients: true
+    stun_listen_addr: &#34;0.0.0.0:41000&#34;
+    private_key_path: /var/lib/headscale/derp_server_private.key
+    automatically_add_embedded_derp_region: true
+    ipv4: 48.1.1.1
+  urls: []
+  paths: [&#34;/etc/headscale/derp.yaml&#34;]
+  auto_update_enabled: true
+  update_frequency: 24h
+disable_check_updates: false
+ephemeral_node_inactivity_timeout: 30m
+# database,log,unix_socket保持默认即可，省略
+policy:
+  mode: database
+dns:
+  magic_dns: true
+  base_domain: ts.net
+  override_local_dns: false
+  nameservers:
+    global: [&#34;223.5.5.5&#34;]
+    split: {}
+  search_domains: []
+  extra_records: []
+# 这个设置为true会使tailscale忽略启动时的--port参数使用随机端口
+randomize_client_port: false</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headscale/derp.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>regions:
+  900:
+    regionid: 900
+    regioncode: china
+    regionname: China
+    nodes:
+      - name: node
+        regionid: 900
+        hostname: 47.1.1.1
+        ipv4: 47.1.1.1
+        stunport: 41000
+        derpport: 40000
+        insecurefortests: true
+        stunonly: false
+        canport80: false</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>headplane/config.yaml</span><ul class=tabs><li class="tab active">yaml</li></ul></figcaption><div class=tabs-content><figure class="highlight language-yaml yaml" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br></pre></td><td class=code><pre class="code-highlight language-yaml yaml"><code class=yaml>server:
+  host: &#34;0.0.0.0&#34;
+  port: 3000
+  cookie_secret: &#34;长度为32的随机字符串请自行生成&#34;
+  cookie_secure: true
+  cookie_max_age: 86400
+  data_path: &#34;/var/lib/headplane&#34;
+headscale:
+  url: &#34;http://headscale:8080&#34;
+  public_url: https://hs.example.com:40000
+  config_path: &#34;/etc/headscale/config.yaml&#34;
+  config_strict: true
+integration:
+  agent:
+    enabled: false
+  docker:
+    # 见下文说明
+    enabled: false
+    container_name: &#34;headscale&#34;
+    # container_label: &#34;me.tale.headplane.target=headscale&#34;
+    # socket: &#34;unix:///var/run/docker.sock&#34;</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>caddy/Caddyfile</span><ul class=tabs><li class="tab active">text</li></ul></figcaption><div class=tabs-content><figure class="highlight language-text text" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br><span>9</span><br><span>10</span><br><span>11</span><br><span>12</span><br><span>13</span><br><span>14</span><br><span>15</span><br><span>16</span><br><span>17</span><br><span>18</span><br><span>19</span><br><span>20</span><br><span>21</span><br><span>22</span><br><span>23</span><br><span>24</span><br><span>25</span><br><span>26</span><br><span>27</span><br><span>28</span><br><span>29</span><br><span>30</span><br></pre></td><td class=code><pre class="code-highlight language-text text"><code class=text>{
+    https_port 40000
+    auto_https disable_redirects
+    admin off
+}
+
+(cloudflare) {
+    dns cloudflare {env.CF_API_TOKEN}
+    resolvers 1.1.1.1
+}
+
+hs.example.com:40000 {
+    tls {
+        import cloudflare
+    }
+    reverse_proxy headscale:8080
+}
+
+hp.example.com:40000 {
+    tls {
+        import cloudflare
+
+        # mTLS客户端验证，如果headplane不暴露在公网可以不用
+        client_auth {
+            trust_pool file /certs/my_CA.crt
+            mode require_and_verify
+        }
+    }
+    reverse_proxy headplane:3000
+}</code></pre></td></tr></tbody></table></figure></div></figure><figure class="codeblock codeblock--tabbed"><figcaption><span>caddy/Dockerfile</span><ul class=tabs><li class="tab active">text</li></ul></figcaption><div class=tabs-content><figure class="highlight language-text text" style=display:block><table><tbody><tr><td class=gutter><pre><span>1</span><br><span>2</span><br><span>3</span><br><span>4</span><br><span>5</span><br><span>6</span><br><span>7</span><br><span>8</span><br></pre></td><td class=code><pre class="code-highlight language-text text"><code class=text>FROM caddy:builder AS builder
+
+RUN xcaddy build \
+    --with github.com/caddy-dns/cloudflare
+
+FROM caddy:latest
+
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy</code></pre></td></tr></tbody></table></figure></div></figure><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行<code>sudo docker-compose up -d</code>就搞定了。</p><p>使用<code>https://hp.example.com:40000</code>可以访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
+</code></pre><p>建议保留这个Key，因为每换一个浏览器都要重新输入，每次都重新生成的话麻烦。</p><p>然后在安装了tailscale的客户端上运行：</p><pre tabindex=0><code>sudo tailscale up --login-server https://hs.example.com:40000
+</code></pre><p>按步骤操作即可登录。</p><h2 id=derp服务器>DERP服务器</h2><p>部署DERP服务器需要准备好自签证书，将私钥和证书分别命名为<code>47.1.1.1.key</code>和<code>47.1.1.1.crt</code>放在<code>certs</code>文件夹内。请自行替换成自己的IP或者域名（备案了的话），这个命名规范是DERP要求的。</p><p>然后准备<code>docker-compose.yaml</code>：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-yaml data-lang=yaml><span style=display:flex><span><span style=color:#f92672>services</span>:
+</span></span><span style=display:flex><span>  <span style=color:#f92672>derper</span>:
+</span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>fredliang/derper:latest</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>derper</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>ports</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>41000</span>:<span style=color:#ae81ff>41000</span><span style=color:#ae81ff>/udp</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>40000</span>:<span style=color:#ae81ff>40000</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>environment</span>:
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_DOMAIN</span>: <span style=color:#e6db74>&#34;47.1.1.1&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_CERT_MODE</span>: <span style=color:#ae81ff>manual</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_CERT_DIR</span>: <span style=color:#ae81ff>/certs</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_ADDR</span>: <span style=color:#e6db74>&#34;:40000&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_STUN</span>: <span style=color:#e6db74>&#34;true&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_STUN_PORT</span>: <span style=color:#e6db74>&#34;41000&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_HTTP_PORT</span>: <span style=color:#e6db74>&#34;-1&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># 见下文说明</span>
+</span></span><span style=display:flex><span>      <span style=color:#f92672>DERP_VERIFY_CLIENTS</span>: <span style=color:#e6db74>&#34;true&#34;</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># DERP_VERIFY_CLIENT_URL: https://hs.example.com:40000</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./certs:/certs</span>
+</span></span><span style=display:flex><span>      <span style=color:#75715e># 见下文说明</span>
+</span></span><span style=display:flex><span>      - <span style=color:#ae81ff>/var/run/tailscale/tailscaled.sock:/var/run/tailscale/tailscaled.sock</span>
+</span></span></code></pre></div><p>使用<code>sudo docker-compose up -d</code>运行，需要注意的是，我这个服务器同时也是一个tailnet节点，所以可以用<code>/var/run/tailscale/tailscaled.sock</code>来验证已登录客户端。如果不是的话，考虑用<code>DERP_VERIFY_CLIENT_URL</code>代替，但可能有坑，见下文说明。</p><p>在节点上使用<code>tailscale netcheck</code>以及<code>tailscale debug derp-map</code>验证是否获取并且连接到DERP服务器。</p><h2 id=踩坑记录>踩坑记录</h2><h3 id=headplane和docker兼容性问题>Headplane和Docker兼容性问题</h3><p>Docker 29版本提高了最低API版本要求，导致很多客户端不兼容，之前Portainer就遇到了这个问题，这次Headplane又遇到了，所以上面配置文件<code>integration.docker.enabled</code>设置为<code>true</code>那么无论如何都是连不上的。好在这个问题已经在<a href=https://github.com/tale/headplane/pull/370>这个PR</a>里修复了，等新版本发布应该就能解决。</p><h3 id=实现限制>实现限制</h3><p>部署过程中发现了一些Headscale没有实现的功能，越是偏门的功能越有可能没有被实现，我遇到的问题有：</p><ul><li>ACL不支持IP sets，见<a href=https://github.com/juanfont/headscale/issues/2409>这个issue</a>，开发人员正在全力开发新的grants功能，估计没空管旧的ACL了，好在可以通过展开形式表达，就是会有重复</li><li>DNS不支持wildcard，例如<code>*.example.com</code>，见<a href=https://github.com/juanfont/headscale/issues/2508>这个issue</a>，不过这似乎是tailscale本身的限制</li></ul><h3 id=derp服务>DERP服务</h3><p>部署DERP服务的过程中遇到了两个坑，一个是<code>InsecureForTests</code>的问题，这个flag对自签证书的环境至关重要，告知tailscale忽略证书错误。一开始看了<a href=https://linux.do/t/topic/171651>这个帖子</a>里说headscale使用本地yaml文件读取DERP配置的的时候，不支持<code>InsecureForTests</code>，必须要用URL形式，完全被带歪了，<a href=https://gist.github.com/zhangguanzhang/db9f6862eef4c82f6918852953a48458>这篇文章</a>说的才是对的，本地yaml文件完全也支持<code>InsecureForTests</code>。</p><p>还有就是derper的两个参数<code>--verify-clients</code>和<code>--verify-client-url</code>（在上面的docker-compose.yaml中它们通过<code>DERP_VERIFY_CLIENTS</code>和<code>DERP_VERIFY_CLIENT_URL</code>环境变量设置），这是为了防止DERP服务器被白嫖。我一开始以为要验证客户端必须访问Headscale，于是就想用<code>--verify-client-url</code>，并且想当然地以为<code>--verify-clients</code>是开关，设置为<code>true</code>时，<code>--verify-client-url</code>才会生效。试了半天才知道这两个参数是互斥值，<code>--verify-clients</code>的意思是从本地的<code>/var/run/tailscale/tailscaled.sock</code>获取用户信息，要想使用<code>--verify-client-url</code>必须先把<code>--verify-clients</code>设置成<code>false</code>。但是我使用<code>--verify-client-url</code>时DERP依旧无法验证客户端，可能是网络关系，毕竟我的Headscale服务器在境外。不过这时我突然意识到验证客户端其实只需要公钥信息，即使有人假冒了公钥，没有私钥的情况下他依旧无法和网络中的其它节点通信，于是用本地的tailscale节点信息验证客户端也就顺理成章了。</p><h3 id=阿里云兼容问题>阿里云兼容问题</h3><p>阿里云内网也会用到<code>100.64.0.0/10</code>这个CGNAT网段，例如阿里云的DNS服务器就是<code>100.100.2.136</code>，APT镜像服务器<code>mirrors.cloud.aliyuncs.com</code>也在这个网段，而tailscale为了安全默认会在iptables里插入一条规则，丢弃所有不是从tailscale网卡中进入本机的<code>100.64.0.0/10</code>数据包，规则如下所示：</p><pre tabindex=0><code>Chain ts-input (1 references)
+ pkts bytes target     prot opt in          out     source               destination
+    0     0 ACCEPT     0    --  lo          *       100.64.0.4           0.0.0.0/0
+    0     0 RETURN     0    --  !tailscale0 *       100.115.92.0/23      0.0.0.0/0
+    0     0 DROP       0    --  !tailscale0 *       100.64.0.0/10        0.0.0.0/0
+11231  587K ACCEPT     0    --  tailscale0  *       0.0.0.0/0            0.0.0.0/0
+13256 1659K ACCEPT     17   --  *           *       0.0.0.0/0            0.0.0.0/0            udp dpt:41641
+</code></pre><p>这就导致阿里云的各种内部服务全都不可用。网上有人干脆不用阿里云的内部服务，但我会用到阿里云的镜像服务，必须得用，于是干脆禁用tailscale的安全规则，反正看着问题不大：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>sudo tailscale up <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>    --accept-dns<span style=color:#f92672>=</span>false <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>    --netfilter-mode<span style=color:#f92672>=</span>nodivert <span style=color:#ae81ff>\
+</span></span></span><span style=display:flex><span><span style=color:#ae81ff></span>    --login-server https://hs.example.com:40000
+</span></span></code></pre></div><p>关键参数是<code>--netfilter-mode=nodivert</code>，tailscale依旧会创建<code>ts-input</code>以及其它规则链，但不会把它插入到<code>INPUT</code>链里，所以它实际上没有生效。</p><h2 id=后记>后记</h2><p>到这里整套服务已经可以正常运行了，只需要在每台设备上登录一下即可，我这里就不再详述了。此外还有配置ACL的过程，在ChatGPT的帮助下，除了踩了点小坑，还是很顺利的。tailscale整体的使用体验非常好，完全解决了WireGuard的痛点。如果DNS功能可以更强大的话，我甚至考虑把DNS也搬到tailnet上，其次还有SSH，service等一大堆高级功能，等headscale支持grants以后，也要再折腾一番。</p></div></div><div id=post-footer class="post-footer main-content-wrap"><div class=post-footer-tags><span class="text-color-light text-small">标签</span><br><a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/headscale/>headscale</a>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/headplane/>headplane</a>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/tailscale/>tailscale</a>
+<a class="tag tag--primary tag--small" href=https://blog.hljin.net/tags/openwrt/>openwrt</a></div><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2025/11/pve-efi-boot-loader/ data-tooltip="解决安装PVE时unable to install the EFI boot loader的问题" aria-label="上一篇: 解决安装PVE时unable to install the EFI boot loader的问题"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div><div id=gitalk><noscript>Please enable JavaScript to view the comments powered by Gitalk.</noscript></div><script src=https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.7.2/gitalk.min.js integrity="sha512-EcTCcXV46teiNwe0VcnM5A038tcY+BaQYO4nW6Gh2i7v4/HjBVg7xx3+JBLl9WofDds//INJAiEGAtdgr8PWyA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script type=text/javascript>(function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("gitalk").innerHTML="Gitalk comments not available by default when the website is previewed locally.";return}new Gitalk({clientID:"2d9c9d837f8496107211",clientSecret:"5a474517d0eb6d5abdb90ab9a31c2ba94f4f43b2",repo:"core2duoe6420.github.io",owner:"core2duoe6420",admin:["core2duoe6420"],id:"604f059d19bc6c9162e6bc5bb4972d16",...{distractionfreemode:!1,enablehotkey:!0,language:"zh-CN",pagerdirection:"first",perpage:10}}).render("gitalk")})()</script></div></article><footer id=footer class=main-content-wrap><span class=copyrights>&copy; 2025 Powered by Hugo with tranquilpeak. All Rights Reserved</span></footer></div><div id=bottom-bar class=post-bottom-bar data-behavior=4><div class=post-actions-wrap><nav><ul class="post-actions post-action-nav"><li class=post-action><a class="post-action-btn btn btn--disabled"><i class="fa fa-angle-left"></i>
+<span class="hide-xs hide-sm text-small icon-ml">下一篇</span></a></li><li class=post-action><a class="post-action-btn btn btn--default tooltip--top" href=https://blog.hljin.net/2025/11/pve-efi-boot-loader/ data-tooltip="解决安装PVE时unable to install the EFI boot loader的问题" aria-label="上一篇: 解决安装PVE时unable to install the EFI boot loader的问题"><span class="hide-xs hide-sm text-small icon-mr">上一篇</span>
+<i class="fa fa-angle-right"></i></a></li></ul></nav><ul class="post-actions post-action-share"><li class="post-action hide-lg hide-md hide-sm"><a class="post-action-btn btn btn--default btn-open-shareoptions" href=#btn-open-shareoptions aria-label=分享这个帖子><i class="fa fa-share-alt" aria-hidden=true></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#gitalk aria-label=发表评论><i class="fa fa-comment"></i></a></li><li class=post-action><a class="post-action-btn btn btn--default" href=#top aria-label=回到顶部><i class="fa fa-arrow-up" aria-hidden=true></i></a></li></ul></div></div></div><div id=about><div id=about-card><div id=about-btn-close><i class="fa fa-times"></i></div><img id=about-card-picture src=https://res.cloudinary.com/core2duoe6420/image/upload/v1643906248/DSC_5117_wviusa.jpg alt=作者的图片><h4 id=about-card-name>Alex King</h4><div id=about-card-bio>Observing without evaluating is the highest form of human intelligence</div><div id=about-card-job><i class="fa fa-briefcase"></i><br>Human</div><div id=about-card-location><i class="fa fa-map-marker-alt"></i><br>Shanghai</div></div></div><div id=cover style=background-image:url(https://res.cloudinary.com/core2duoe6420/image/upload/v1643905455/20220204002352_yqvhwd.jpg)></div><script src=https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/highlight.min.js integrity="sha512-z+/WWfyD5tccCukM4VvONpEtLmbAm5LDu7eKiyMQJ9m7OfPEDL7gENyDRL3Yfe8XAuGsS2fS4xSMnl6d30kqGQ==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js integrity="sha512-uURl+ZXMBrF4AwGaWmEetzrd+J5/8NRkWAvJx5sbPSSuOb0bZLqf+tOzniObO00BjHa/dD7gub9oCGMLPQHtQA==" crossorigin=anonymous referrerpolicy=no-referrer></script>
+<script src=https://blog.hljin.net/js/script-yqzy9wdlzix4lbbwdnzvwx3egsne77earqmn73v9uno8aupuph8wfguccut.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-gE8KAQyFIzV1C9+GZ8TKJHZS2s+n7EjNtC+IMRn1l5+WYJTHOODUM6JSjZhFhqXmc7bG8Av6XXpckA4tYhflnw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/apache.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-EWROca+bote+7Oaaar1F6y74iZj1r1F9rm/ly7o+/FwJopbBaWtsFDmaKoZDd3QiGU2pGacBirHJNivmGLYrow==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/go.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-GDVzAn0wpx1yVtQsRWmFc6PhJiLBPdUic+h4GWgljBh904O3JU10fk9EKNpVyIoPqkFn54rgL2QBG4BmUTMpiQ==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/http.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-UgZlma8NzkrDb/NWgmLIcTrH7i/CSnLLDRFqCSNF5NGPpjKmzyM25qcoXGOup8+cDakKyaiTDd7N4dyH4YT+IA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/less.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-lot9koe73sfXIrUvIPM/UEhuMciN56RPyBdOyZgfO53P2lkWyyXN7J+njcxIIBRV+nVDQeiWtiXg+bLAJZDTfg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/nginx.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-Zd3e7XxHP00TD0Imr0PIfeM0fl0v95kMWuhyAS3Wn1UTSXTkz0OhtRgBAr4JlmADRgiXr4x7lpeUdqaGN8xIog==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/puppet.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-qtqDO052iXMSP+5d/aE/jMtL9vIIGvONgTJziC2K/ZIB1yEGa55WVxGE9/08rSQ62EoDifS9SWVGZ7ihSLhzMA==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/scss.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-1NmkjnEDnwwwcu28KoQF8vs3oaPFokQHbmbtwGhFfeDsQZtVFI8zW2aE9O8yMYdpdyKV/5blE4pSWw4Z/Sv97w==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/stylus.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-B2wSfruPjr8EJL6IIzQr1eAuDwrsfIfccNf/LCEdxELCgC/S/ZMt/Uvk80aD79m7IqOqW+Sw8nbkvha20yZpzg==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/swift.min.js></script>
+<script async crossorigin=anonymous defer integrity="sha512-28oDiQZGKUVN6wQ7PSLPNipOcmkCALXKwOi7bnkyFf8QiMZQxG9EQoy/iiNx6Zxj2cG2SbVa4dXKigQhu7GiFw==" src=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.1.0/languages/yaml.min.js></script>
+<script async crossorigin=anonymous defer src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script>$(document).ready(function(){hljs.configure({classPrefix:"",useBR:!1}),$("pre.code-highlight > code, pre > code").each(function(e,t){$(this).hasClass("codeblock")||$(this).addClass("codeblock"),hljs.highlightBlock(t)})})</script></body></html>
