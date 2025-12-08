@@ -9,6 +9,7 @@
 </span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>headscale/headscale:v0.27.1</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>headscale</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>user</span>: <span style=color:#ae81ff>1000</span>:<span style=color:#ae81ff>1000</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
 </span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/config.yaml:/etc/headscale/config.yaml</span>
 </span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/derp.yaml:/etc/headscale/derp.yaml</span>
@@ -24,6 +25,7 @@
 </span></span><span style=display:flex><span>    <span style=color:#f92672>image</span>: <span style=color:#ae81ff>ghcr.io/tale/headplane:0.6.2-beta.2</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>container_name</span>: <span style=color:#ae81ff>headplane</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>restart</span>: <span style=color:#ae81ff>unless-stopped</span>
+</span></span><span style=display:flex><span>    <span style=color:#f92672>user</span>: <span style=color:#ae81ff>1000</span>:<span style=color:#ae81ff>1000</span>
 </span></span><span style=display:flex><span>    <span style=color:#f92672>volumes</span>:
 </span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headplane/config.yaml:/etc/headplane/config.yaml</span>
 </span></span><span style=display:flex><span>      - <span style=color:#ae81ff>./headscale/config.yaml:/etc/headscale/config.yaml</span>
@@ -169,7 +171,8 @@ randomize_client_port: false
 </span></span><span style=display:flex><span>FROM caddy:latest
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>COPY --from=builder /usr/bin/caddy /usr/bin/caddy
-</span></span></code></pre></div><h3 id=部署说明>部署说明</h3><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。</p><p>全部准备好后，运行以下命令启动服务：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>export DOCKER_GROUP<span style=color:#f92672>=</span><span style=color:#66d9ef>$(</span>getent group docker | cut -d: -f3<span style=color:#66d9ef>)</span>
+</span></span></code></pre></div><h3 id=部署说明>部署说明</h3><p>我这里容器的用户都是<code>1000:1000</code>，因此在启动之前要保证挂载进容器的目录都是<code>1000</code>用户可读写的，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。运行以下命令启动服务：</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-bash data-lang=bash><span style=display:flex><span>mkdir -p headscale/<span style=color:#f92672>{</span>data,run<span style=color:#f92672>}</span> headplane/data caddy/<span style=color:#f92672>{</span>data,config,certs<span style=color:#f92672>}</span>
+</span></span><span style=display:flex><span>export DOCKER_GROUP<span style=color:#f92672>=</span><span style=color:#66d9ef>$(</span>getent group docker | cut -d: -f3<span style=color:#66d9ef>)</span>
 </span></span><span style=display:flex><span>sudo -E docker compose up -d
 </span></span></code></pre></div><p>上面的<code>docker-compose.yaml</code>里用了<code>DOCKER_GROUP</code>这个环境变量，主要作用是让Headplane有权限读取<code>/var/run/docker.sock</code>，与Headscale的容器集成。</p><p>通过<code>https://hp.example.com:40000/admin/</code>访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：</p><pre tabindex=0><code>sudo docker exec headscale headscale apikeys create -e 999d
 </code></pre><p>建议保留这个Key，因为每换一个浏览器都要重新输入，每次都重新生成的话麻烦。</p><p>然后在安装了tailscale的客户端上运行：</p><pre tabindex=0><code>sudo tailscale up --login-server https://hs.example.com:40000
