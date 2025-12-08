@@ -19,7 +19,7 @@ tags:
 
 本文介绍的部署环境和方案如下：
 
-- Headscale版本`0.27.1`；选用headplane作为UI管理界面，版本`0.6.1`；Docker版本`29.1.1`。该版本的Headscale要求客户端tailscale至少是`1.64.0`，目前的tailscale最新版是`1.90.9`
+- Headscale版本`0.27.1`；选用Headplane作为UI管理界面，版本`0.6.1`；Docker版本`29.1.1`。该版本的Headscale要求客户端tailscale至少是`1.64.0`，目前的tailscale最新版是`1.90.9`
 - Headscale部署在海外服务器，使用内建的DERP服务；同时在境内再起一台DERP服务器加速连接。主要是因为我的域名没有备案，没法把Headscale直接部署在境内。我尝试过自签证书并且直接使用IP，Ubuntu上可以添加系统CA，没有问题，但我有客户端需要用OpenWrt，死活加不上证书，只能放弃
 - 本文例子中会使用以下参数，请读者根据自己的情况自行调整：
 
@@ -51,7 +51,7 @@ tags:
 ```yaml
 services:
   headscale:
-    image: headscale/headscale:latest
+    image: headscale/headscale:v0.27.1
     container_name: headscale
     restart: unless-stopped
     volumes:
@@ -66,7 +66,7 @@ services:
       - headscale-net
 
   headplane:
-    image: ghcr.io/tale/headplane:latest
+    image: ghcr.io/tale/headplane:0.6.1
     container_name: headplane
     restart: unless-stopped
     volumes:
@@ -175,7 +175,7 @@ regions:
 
 #### `headplane/config.yaml`
 
-headplane配置文件，[官方示例](https://github.com/tale/headplane/blob/main/config.example.yaml)。如果不需要Web UI，也可以不部署。
+Headplane配置文件，[官方示例](https://github.com/tale/headplane/blob/main/config.example.yaml)。如果不需要Web UI，也可以不部署。
 
 ```yaml
 server:
@@ -300,7 +300,7 @@ services:
       DERP_HTTP_PORT: "-1"
       # 见下文说明
       DERP_VERIFY_CLIENTS: "true"
-      # DERP_VERIFY_CLIENT_URL: https://hs.example.com:40000
+      # DERP_VERIFY_CLIENT_URL: https://hs.example.com:40000/verify
     volumes:
       - ./certs:/certs
       # 见下文说明
