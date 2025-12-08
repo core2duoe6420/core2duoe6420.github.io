@@ -54,6 +54,7 @@ services:
     image: headscale/headscale:v0.27.1
     container_name: headscale
     restart: unless-stopped
+    user: 1000:1000
     volumes:
       - ./headscale/config.yaml:/etc/headscale/config.yaml
       - ./headscale/derp.yaml:/etc/headscale/derp.yaml
@@ -69,6 +70,7 @@ services:
     image: ghcr.io/tale/headplane:0.6.2-beta.2
     container_name: headplane
     restart: unless-stopped
+    user: 1000:1000
     volumes:
       - ./headplane/config.yaml:/etc/headplane/config.yaml
       - ./headscale/config.yaml:/etc/headscale/config.yaml
@@ -253,11 +255,10 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 ### 部署说明
 
-我这里容器的用户都是`1000:1000`，因此在启动之前要保证挂载进容器的目录都是`1000`用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。
-
-全部准备好后，运行以下命令启动服务：
+我这里容器的用户都是`1000:1000`，因此在启动之前要保证挂载进容器的目录都是`1000`用户可读写的，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。运行以下命令启动服务：
 
 ```bash
+mkdir -p headscale/{data,run} headplane/data caddy/{data,config,certs}
 export DOCKER_GROUP=$(getent group docker | cut -d: -f3)
 sudo -E docker compose up -d
 ```
