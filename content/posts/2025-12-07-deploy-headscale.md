@@ -19,7 +19,7 @@ tags:
 
 本文介绍的部署环境和方案如下：
 
-- Headscale版本`0.27.1`；选用Headplane作为UI管理界面，版本`0.6.1`；Docker版本`29.1.1`。该版本的Headscale要求客户端tailscale至少是`1.64.0`，目前的tailscale最新版是`1.90.9`
+- Headscale版本`0.27.1`；选用Headplane作为UI管理界面，版本`0.6.2-beta.2`（使用beta版的原因见下文）；Docker版本`29.1.1`。该版本的Headscale要求客户端tailscale至少是`1.64.0`，目前的tailscale最新版是`1.90.9`
 - Headscale部署在海外服务器，使用内建的DERP服务；同时在境内再起一台DERP服务器加速连接。主要是因为我的域名没有备案，没法把Headscale直接部署在境内。我尝试过自签证书并且直接使用IP，Ubuntu上可以添加系统CA，没有问题，但我有客户端需要用OpenWrt，死活加不上证书，只能放弃
 - 本文例子中会使用以下参数，请读者根据自己的情况自行调整：
 
@@ -66,7 +66,7 @@ services:
       - headscale-net
 
   headplane:
-    image: ghcr.io/tale/headplane:0.6.1
+    image: ghcr.io/tale/headplane:0.6.2-beta.2
     container_name: headplane
     restart: unless-stopped
     volumes:
@@ -76,6 +76,8 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro  #见下文说明
     networks:
       - headscale-net
+    group_add:
+      - ${DOCKER_GROUP}
 
   caddy:
     build:
@@ -98,9 +100,6 @@ services:
 
 networks:
   headscale-net:
-
-volumes:
-  headscale-run:
 ```
 
 #### `headscale/config.yaml`
@@ -131,9 +130,9 @@ derp:
     ipv4: 48.1.1.1
   urls: []
   paths: ["/etc/headscale/derp.yaml"]
-  auto_update_enabled: true
+  auto_update_enabled: false
   update_frequency: 24h
-disable_check_updates: false
+disable_check_updates: true
 ephemeral_node_inactivity_timeout: 30m
 # database,log,unix_socket保持默认即可，省略
 policy:
@@ -181,7 +180,7 @@ Headplane配置文件，[官方示例](https://github.com/tale/headplane/blob/ma
 server:
   host: "0.0.0.0"
   port: 3000
-  cookie_secret: "长度为32的随机字符串请自行生成"
+  cookie_secret: "长度为32的随机字符串请自行生成 tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32"
   cookie_secure: true
   cookie_max_age: 86400
   data_path: "/var/lib/headplane"
@@ -195,10 +194,9 @@ integration:
     enabled: false
   docker:
     # 见下文说明
-    enabled: false
+    enabled: true
     container_name: "headscale"
-    # container_label: "me.tale.headplane.target=headscale"
-    # socket: "unix:///var/run/docker.sock"
+    socket: "unix:///var/run/docker.sock"
 ```
 
 #### `caddy/Caddyfile`
@@ -257,7 +255,14 @@ COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 我这里容器的用户都是`1000:1000`，因此在启动之前要保证挂载进容器的目录都是`1000`用户可读写的，建议事先创建，如果文件夹不存在Docker自行创建的话owner是root，会有权限问题。
 
-全部准备好后，运行`sudo docker-compose up -d`就搞定了。
+全部准备好后，运行以下命令启动服务：
+
+```bash
+export DOCKER_GROUP=$(getent group docker | cut -d: -f3)
+sudo -E docker compose up -d
+```
+
+上面的`docker-compose.yaml`里用了`DOCKER_GROUP`这个环境变量，主要作用是让Headplane有权限读取`/var/run/docker.sock`，与Headscale的容器集成。
 
 通过`https://hp.example.com:40000/admin/`访问Headplane，第一次访问会要求输入Headscale Key，使用以下命令生成：
 
@@ -315,7 +320,7 @@ services:
 
 ### Headplane和Docker兼容性问题
 
-Docker 29版本提高了最低API版本要求，导致很多客户端不兼容，之前Portainer就遇到了这个问题，这次Headplane又遇到了，所以上面配置文件`integration.docker.enabled`设置为`true`那么无论如何都是连不上的。好在这个问题已经在[这个PR](https://github.com/tale/headplane/pull/370)里修复了，等新版本发布应该就能解决。
+Docker 29版本提高了最低API版本要求，导致很多客户端不兼容，之前Portainer就遇到了这个问题，这次Headplane又遇到了。一开始我用的是正式版`0.6.1`，但是怎么都连不上Docker，日志也很有迷惑性，压根没有和API兼容性有关的内容。好在这个问题已经在[这个PR](https://github.com/tale/headplane/pull/370)里修复了，目前使用`0.6.2-beta.2`版本镜像即可。
 
 ### 实现限制
 
