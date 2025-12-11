@@ -1,3 +1,4 @@
 [submodule "themes/hugo-tranquilpeak-theme"]
 	path = themes/hugo-tranquilpeak-theme
-	url = https://github.com/kakawait/hugo-tranquilpeak-theme
+	url = https://github.com/core2duoe6420/hugo-tranquilpeak-theme
+	branch = english-site
