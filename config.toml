@@ -1,11 +1,29 @@
 baseURL = "https://blog.hljin.net/"
 languageCode = "zh-cn"
 defaultContentLanguage = "zh-cn"
+defaultContentLanguageInSubdir = false
+disableDefaultLanguageRedirect = false
 title = "Alex King's blog"
 theme = "hugo-tranquilpeak-theme"
 disqusShortname = "core2duoe6420"
 paginate = 7
 canonifyurls = true
+
+[languages]
+  [languages.zh-cn]
+    contentDir = 'content/zh-cn'
+    disabled = false
+    languageCode = 'zh-cn'
+    languageDirection = 'ltr'
+    languageName = '中文'
+    weight = 1
+  [languages.en-us]
+    contentDir = 'content/en-us'
+    disabled = false
+    languageCode = 'en-us'
+    languageDirection = 'ltr'
+    languageName = 'English'
+    weight = 1
 
 [permalinks]
   posts = "/:year/:month/:slug/"
